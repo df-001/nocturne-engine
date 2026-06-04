@@ -12,7 +12,15 @@ export default (client) => {
             if (message.author.bot) return; // Ignore self
             if (message.guild) return; // Ignore server messages
 
-            const returnMessage = await message.channel.send("...");
+            // clientContext for whenever needed
+            const clientContext = {
+                client: client,
+                message: message,
+                channel: message.channel,
+                author: message.author
+            };
+
+            let returnMessage = null;
 
             console.log(`<Message from ${message.author.tag}> ${message.content}`)
 
@@ -20,10 +28,15 @@ export default (client) => {
             let lastEditTime = Date.now(); // Date object for timed streams
             const history = await contextStore.get("dm", message.channel.id);
 
-            const stream = processTextStream({ prompt: message.content, sys_prompt: DM_SYSTEM_PROMPT, history });
+            const stream = processTextStream({ prompt: message.content, sys_prompt: DM_SYSTEM_PROMPT, history, context: clientContext });
 
             for await (const chunk of stream) {
                 text += chunk;
+
+                if (!returnMessage) {
+                    returnMessage = await message.channel.send(text + " |");
+                    lastEditTime = Date.now();
+                }
 
                 if (Date.now() - lastEditTime >= STREAMING_INTERVAL && text.length < MESSAGE_CHAR_LIMIT) {
                     await returnMessage.edit(text.slice(0, 2000) + " |");
@@ -37,7 +50,7 @@ export default (client) => {
                 for (const chunk of chunks.slice(1)) {
                     await message.channel.send(chunk);
                 }
-            } else {
+            } else if (returnMessage) {
                 await returnMessage.edit(text);
             }
             // Push to context
@@ -52,12 +65,20 @@ export default (client) => {
             if (message.author.bot) return; // Ignore self
             if (message.guild) return; // Ignore server messages
 
+            // clientContext for whenever needed
+            const clientContext = {
+                client: client,
+                message: message,
+                channel: message.channel,
+                author: message.author
+            };
+
             await message.channel.sendTyping();
 
             console.log(`<Message from ${message.author.tag}> ${message.content}`)
             const history = await contextStore.get("dm", message.channel.id);
 
-            const response = await processText({ prompt: message.content, sys_prompt: DM_SYSTEM_PROMPT, history });
+            const response = await processText({ prompt: message.content, sys_prompt: DM_SYSTEM_PROMPT, history, context: clientContext });
 
             // Push to context
             await contextStore.push("dm", message.channel.id, "user",      message.content);

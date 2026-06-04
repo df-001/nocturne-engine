@@ -11,7 +11,7 @@ const commands = [
         description: "Clears all conversation history.",
     },
 ];
-console.log(TOKEN)
+
 const rest = new REST({ version: "10" }).setToken(DISCORD_TOKEN);
 
 try {

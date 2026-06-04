@@ -36,9 +36,7 @@ class ContextStore {
             const rawData = await readFile(file, "utf8");
             
             const parsed = JSON.parse(rawData);
-            
-            console.log(`channel id${channelId}`)
-            console.log(`message parsed${parsed.messages}`)
+
             // Reads JSON into cache map
             this.#cache.set(channelId, parsed.messages || []);
         } catch (error) {

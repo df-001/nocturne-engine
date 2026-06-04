@@ -38,6 +38,8 @@ export const MESSAGE_CHAR_LIMIT = process.env.MESSAGE_CHAR_LIMIT;
 export const LLM_URL = process.env.LLM_URL;
 export const LLM_MODEL = process.env.LLM_MODEL;
 export const LLM_VISION = process.env.LLM_VISION;
+export const ENABLE_TOOLS = process.env.ENABLE_TOOLS;
+export const MAX_TOOL_TURNS = process.env.MAX_TOOL_TURNS;
 
 // External Servers
 
