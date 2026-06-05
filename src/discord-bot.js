@@ -1,5 +1,5 @@
-import { Client, Events, GatewayIntentBits, Partials } from "discord.js";
-import { DISCORD_TOKEN, CLIENT_ID } from "./config.js";
+import { Client, Events, GatewayIntentBits, Partials, ActivityType } from "discord.js";
+import { DISCORD_TOKEN, CLIENT_ID, STATUS, ACTIVITY } from "./config.js";
 
 import slashListener from "./core/slash-handler.js";
 import dmListener from "./core/dm-handler.js";
@@ -19,6 +19,14 @@ dmListener(client);
 
 client.on(Events.ClientReady, readyClient => {
     console.log(`Active account: ${readyClient.user.tag}`);
+    
+    client.user.setPresence({
+        status: STATUS,
+        activities: [{
+            name: ACTIVITY,
+            type: ActivityType.Custom // Playing, Watching, Listening, Streaming, Competing, Custom
+        }]
+    });
 });
 
 client.login(DISCORD_TOKEN);

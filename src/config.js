@@ -30,6 +30,8 @@ export const WEB_SYSTEM_PROMPT = loadSystemPrompt(process.env.WEB_PROMPT);
 
 export const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 export const CLIENT_ID = process.env.CLIENT_ID;
+export const STATUS = process.env.STATUS;
+export const ACTIVITY = process.env.ACTIVITY;
 export const STREAMING_INTERVAL = process.env.STREAMING_INTERVAL;
 export const MESSAGE_CHAR_LIMIT = process.env.MESSAGE_CHAR_LIMIT;
 
