@@ -1,13 +1,15 @@
 import { Events } from "discord.js";
 import { respondStream, respondNoStream } from "../llm/llm-helpers.js";
-import { STREAMING_INTERVAL } from "../config.js";
+import { STREAMING_INTERVAL, BOT_CHANNEL_NAME } from "../config.js";
+
 
 export default (client) => {
     if (STREAMING_INTERVAL > 0) {
         // Streaming enabled
         client.on(Events.MessageCreate, async (message) => {
             if (message.author.bot) return; // Ignore self
-            if (message.guild) return; // Ignore server messages
+            if (!message.guild) return; // Ignore server messages
+            if (!message.channel.name.includes(BOT_CHANNEL_NAME)) return; // Ignores auto-respond for unrelated channels
 
             // clientContext for response
             const clientContext = {
@@ -15,7 +17,7 @@ export default (client) => {
                 message: message,
                 channel: message.channel,
                 author: message.author,
-                type: "dm"
+                type: "guild"
             };
 
             await respondStream({ clientContext });
@@ -24,7 +26,8 @@ export default (client) => {
         // Streaming disabled
         client.on(Events.MessageCreate, async (message) => {
             if (message.author.bot) return; // Ignore self
-            if (message.guild) return; // Ignore server messages
+            if (!message.guild) return; // Ignore dm messages
+            if (!message.channel.name.includes(BOT_CHANNEL_NAME)) return; // Ignores auto-respond for unrelated channels
 
             // clientContext for response
             const clientContext = {
@@ -32,7 +35,7 @@ export default (client) => {
                 message: message,
                 channel: message.channel,
                 author: message.author,
-                type: "dm"
+                type: "guild",
             };
 
             await respondNoStream({ clientContext });

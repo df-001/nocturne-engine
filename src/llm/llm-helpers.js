@@ -1,4 +1,7 @@
-import { LLM_VISION } from "../config.js";
+import { LLM_VISION, STREAMING_INTERVAL, MESSAGE_CHAR_LIMIT, VOICE_SYSTEM_PROMPT, DM_SYSTEM_PROMPT } from "../config.js";
+import { contextStore } from "../llm/context.js";
+import { splitText } from "../llm/text-splitter.js";
+import { processText, processTextStream } from "../llm/llm-client.js";
 import sharp from "sharp";
 
 export async function buildPrompt(message) {
@@ -55,4 +58,126 @@ export function clearImages(prompt) {
         if (part.type === "text") return part.text;
     }
     return "[sent image]"; // Placeholder tag to tell llm that image was present
+}
+
+export async function respondStream({ clientContext }) {
+    const message = clientContext.message;
+    const channel = clientContext.channel;
+    const author = clientContext.author;
+    const type = clientContext.type;
+
+    let returnMessage = null;
+
+    console.log(`<Message from ${author.username}>`);
+
+    let text = "";
+    let lastEditTime = Date.now(); // Date object for timed streams
+    const history = await contextStore.get(type, channel.id);
+
+    let prompt = await buildPrompt(message);
+    const prefix = `*${author.username}:* `;
+    // Adds prefix to users text
+    if (typeof prompt === "string") {
+        prompt = prefix + prompt;
+    } else {
+        prompt[0].text = prefix + prompt[0].text;
+    }
+
+    let sys_prompt;
+    if (type === "guild") {
+        sys_prompt = VOICE_SYSTEM_PROMPT;
+    } else {
+        sys_prompt = DM_SYSTEM_PROMPT;
+    }
+
+    const stream = processTextStream({ prompt: prompt, sys_prompt: sys_prompt, history, context: clientContext });
+
+    for await (const chunk of stream) {
+        text += chunk;
+
+        if (!returnMessage) {
+            returnMessage = await channel.send(text + " |");
+            lastEditTime = Date.now();
+        }
+
+        if (Date.now() - lastEditTime >= STREAMING_INTERVAL && text.length < MESSAGE_CHAR_LIMIT) {
+            await returnMessage.edit(text.slice(0, 2000) + " |");
+            lastEditTime = Date.now(); // Reset the timer
+        }
+    }
+
+    if (text.length > MESSAGE_CHAR_LIMIT) {
+        const chunks = splitText(text);
+        await returnMessage.edit(chunks[0]);
+        for (const chunk of chunks.slice(1)) {
+            await channel.send(chunk);
+        }
+    } else {
+        await returnMessage.edit(text);
+    }
+
+    // Push to context
+    const extractedPrompt = clearImages(prompt);
+    await contextStore.push(type, channel.id, "user", extractedPrompt);
+    await contextStore.push(type, channel.id, "assistant", text);
+
+    console.log(`<Response> ${text}`);
+}
+
+export async function respondNoStream({ clientContext, slashInteraction = false }) {
+    const message = clientContext.message;
+    const channel = clientContext.channel;
+    const author = clientContext.author;
+    const type = clientContext.type;
+
+    if (!slashInteraction) await channel.sendTyping();
+
+    console.log(`<Message from ${author.username}>`);
+    const history = await contextStore.get(type, channel.id);
+
+    let prompt;
+    if (slashInteraction) {
+        prompt = message;
+    } else {
+        prompt = await buildPrompt(message);
+        const prefix = `*${author.username}:* `;
+        // Adds prefix to users text
+        if (typeof prompt === "string") {
+            prompt = prefix + prompt;
+        } else {
+            prompt[0].text = prefix + prompt[0].text;
+        }
+    }
+
+    let sys_prompt;
+    if (type === "guild") {
+        sys_prompt = VOICE_SYSTEM_PROMPT;
+    } else {
+        sys_prompt = DM_SYSTEM_PROMPT;
+    }
+
+    const response = await processText({ prompt: prompt, sys_prompt: sys_prompt, history, context: clientContext });
+
+    // Push to context
+    const extractedPrompt = clearImages(prompt);
+    await contextStore.push(type, channel.id, "user", extractedPrompt);
+    await contextStore.push(type, channel.id, "assistant", response);
+
+    console.log(`<Response> ${response}`);
+    if (response.length > MESSAGE_CHAR_LIMIT) {
+        const chunks = splitText(response);
+        for (const chunk of chunks) {
+            if (slashInteraction) {
+                await clientContext.interaction.editReply(chunk);
+            } else {
+                await channel.send(chunk);
+            }
+        }
+    } else {
+        if (slashInteraction) {
+            await clientContext.interaction.editReply(response);
+        } else {
+            await channel.send(response);
+        }
+    }
 }

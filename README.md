@@ -4,7 +4,7 @@
 
 # Nocturne
 
-## Progress [~33%] (11/33 scheduled)
+## Progress [~38%] Functional
 
 ## Implemented
 
@@ -16,6 +16,8 @@
 - [x] Streamed responses
 - [x] Custom status
 - [x] Image input
+- [x] Guild chat commands
+- [x] Guild bot channel
 
 ### Tools
 - [x] Base tool integration

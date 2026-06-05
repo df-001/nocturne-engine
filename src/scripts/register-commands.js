@@ -1,5 +1,5 @@
 import { REST, Routes } from "discord.js";
-import { DISCORD_TOKEN, CLIENT_ID } from "./config.js";
+import { DISCORD_TOKEN, CLIENT_ID } from "../config.js";
 
 const commands = [
     {
@@ -10,6 +10,18 @@ const commands = [
         name: "reset",
         description: "Clears all conversation history.",
     },
+    {
+        name: "chat",
+        description: "Send a message in a channel.",
+        options: [
+            {
+                name: "message",
+                description: "Message content (Text)",
+                type: 3, // string
+                required: true,
+            }
+        ]
+    }
 ];
 
 const rest = new REST({ version: "10" }).setToken(DISCORD_TOKEN);
