@@ -1,8 +1,9 @@
 import { Events } from "discord.js";
-import { processText, processTextStream } from "../text/llm-client.js";
+import { processText, processTextStream } from "../llm/llm-client.js";
+import { buildPrompt, clearImages } from "../llm/llm-helpers.js";
 import { STREAMING_INTERVAL, MESSAGE_CHAR_LIMIT, DM_SYSTEM_PROMPT } from "../config.js";
-import { splitText } from "../text/text-splitter.js";
-import { contextStore } from "../text/context.js";
+import { splitText } from "../llm/text-splitter.js";
+import { contextStore } from "../llm/context.js";
 
 
 export default (client) => {
@@ -28,7 +29,9 @@ export default (client) => {
             let lastEditTime = Date.now(); // Date object for timed streams
             const history = await contextStore.get("dm", message.channel.id);
 
-            const stream = processTextStream({ prompt: message.content, sys_prompt: DM_SYSTEM_PROMPT, history, context: clientContext });
+            const prompt = await buildPrompt(message)
+
+            const stream = processTextStream({ prompt: prompt, sys_prompt: DM_SYSTEM_PROMPT, history, context: clientContext });
 
             for await (const chunk of stream) {
                 text += chunk;
@@ -54,7 +57,9 @@ export default (client) => {
                 await returnMessage.edit(text);
             }
             // Push to context
-            await contextStore.push("dm", message.channel.id, "user",      message.content);
+            const extractedPrompt = clearImages(prompt)
+            
+            await contextStore.push("dm", message.channel.id, "user", extractedPrompt);
             await contextStore.push("dm", message.channel.id, "assistant", text);
 
             console.log(`<Response> ${text}`);
@@ -78,10 +83,13 @@ export default (client) => {
             console.log(`<Message from ${message.author.tag}> ${message.content}`)
             const history = await contextStore.get("dm", message.channel.id);
 
-            const response = await processText({ prompt: message.content, sys_prompt: DM_SYSTEM_PROMPT, history, context: clientContext });
+            const prompt = await buildPrompt(message);
+
+            const response = await processText({ prompt: prompt, sys_prompt: DM_SYSTEM_PROMPT, history, context: clientContext });
 
             // Push to context
-            await contextStore.push("dm", message.channel.id, "user",      message.content);
+            const extractedPrompt = clearImages(prompt)
+            await contextStore.push("dm", message.channel.id, "user", extractedPrompt);
             await contextStore.push("dm", message.channel.id, "assistant", response);
 
             console.log(`<Response> ${response}`);

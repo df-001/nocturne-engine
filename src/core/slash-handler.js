@@ -1,5 +1,5 @@
 import { Events, MessageFlags } from "discord.js";
-import { contextStore } from "../text/context.js";
+import { contextStore } from "../llm/context.js";
 
 export default (client) => {
     client.on(Events.InteractionCreate, async (interaction) => {

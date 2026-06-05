@@ -1,6 +1,25 @@
 import { MAX_TOKENS, TEMPERATURE, LLM_URL, LLM_MODEL, MAX_TOOL_TURNS } from "../config.js";
 import { getToolDefinitions, getToolStatus, useTool } from "./tools/installed-tools.js";
 
+async function executeToolCalls(toolCalls, messages, context) {
+    for (const tc of toolCalls) {
+        const args = JSON.parse(tc.function.arguments);
+        const statusText = getToolStatus(tc.function.name, args);
+        console.log(`<Tool> ${statusText}`);
+
+        if (context.channel) {
+            await context.channel.send(`*${statusText}*`);
+        }
+
+        const result = await useTool(tc.function.name, args, context);
+        messages.push({
+            role: "tool",
+            tool_call_id: tc.id,
+            content: String(result)
+        });
+    }
+}
+
 export async function processText({ prompt, temp = TEMPERATURE, sys_prompt = "", history = [], context = {} }) {
     try {
         const messages = [
@@ -35,22 +54,7 @@ export async function processText({ prompt, temp = TEMPERATURE, sys_prompt = "",
                 return choice.message.content;
             }
             // Runs tool call and loops
-            for (const tc of choice.message.tool_calls) {
-                const args = JSON.parse(tc.function.arguments);
-                const statusText = getToolStatus(tc.function.name, args)
-                console.log(`<Tool> ${statusText}`)
-
-                if (context.channel) {
-                    await context.channel.send(`*${statusText}*`)
-                }
-
-                const result = await useTool(tc.function.name, args, context);
-                messages.push({
-                    role: "tool",
-                    tool_call_id: tc.id,
-                    content: String(result)
-                });
-            }
+            await executeToolCalls(choice.message.tool_calls, messages, context);
         }
 
         return "Maximum tool uses exceeded."
@@ -154,22 +158,7 @@ export async function* processTextStream({ prompt, temp = TEMPERATURE, sys_promp
             if (finishReason !== "tool_calls") return;
 
             // If tools requested
-            for (const tc of toolCalls) {
-                const args = JSON.parse(tc.function.arguments);
-                const statusText = getToolStatus(tc.function.name, args);
-                console.log(`<Tool> ${statusText}`)
-
-                if (context.channel) {
-                    await context.channel.send(`*${statusText}*`);
-                }
-
-                const result = await useTool(tc.function.name, args, context);
-                messages.push({
-                    role: "tool",
-                    tool_call_id: tc.id,
-                    content: String(result)
-                });
-            }
+            await executeToolCalls(toolCalls, messages, context);
         }
 
         yield "Maximum tool uses exceeded.";
