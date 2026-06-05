@@ -14,7 +14,7 @@ const tools = [getCurrentTime, messageUser];
 export function getToolDefinitions() {
     // Gets definitions from each tool and returns a list containing them
     if (!ENABLE_TOOLS) return [];
-    
+
     const definitions = [];
     for (const tool of tools) {
         definitions.push(tool.definition);
@@ -51,7 +51,7 @@ export async function useTool(name, args, context) {
         }
     }
     if (!activeTool) {
-        throw new Error(`${name} not registered as a tool.`)
+        throw new Error(`${name} not registered as a tool.`);
     }
-    return await activeTool.execute(args, context)
+    return await activeTool.execute(args, context);
 }

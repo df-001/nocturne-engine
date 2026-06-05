@@ -15,7 +15,6 @@ export async function buildPrompt(message) {
         ]
     */
     const imageAttachments = [];
-    const supportedTypes = []
 
     for (const attachment of message.attachments.values()) {
         if (attachment.contentType?.startsWith("image/") && LLM_VISION) {

@@ -26,7 +26,7 @@ export async function processText({ prompt, temp = TEMPERATURE, sys_prompt = "",
             { role: "system", content: sys_prompt },
             ...history,
             { role: "user", content: prompt }
-        ]
+        ];
 
         for (let i = 0; i < MAX_TOOL_TURNS; i++) {
             const res = await fetch(LLM_URL, {
@@ -57,9 +57,9 @@ export async function processText({ prompt, temp = TEMPERATURE, sys_prompt = "",
             await executeToolCalls(choice.message.tool_calls, messages, context);
         }
 
-        return "Maximum tool uses exceeded."
+        return "Maximum tool uses exceeded.";
     } catch (err) {
-        console.warn(err)
+        console.warn(err);
         return "An error occurred during thinking.";
     }
 }
@@ -70,7 +70,7 @@ export async function* processTextStream({ prompt, temp = TEMPERATURE, sys_promp
             { role: "system", content: sys_prompt },
             ...history,
             { role: "user", content: prompt }
-        ]
+        ];
 
         for (let i = 0; i < MAX_TOOL_TURNS; i++) {
             const res = await fetch(LLM_URL, {
@@ -142,7 +142,7 @@ export async function* processTextStream({ prompt, temp = TEMPERATURE, sys_promp
                                 if (tc.function?.arguments) entry.function.arguments += tc.function.arguments;
                             }
                         }
-                    } catch (e) {
+                    } catch {
                         // Skip malformed packets
                     }
                 }

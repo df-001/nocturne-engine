@@ -16,7 +16,7 @@ class ContextStore {
         this.#defaultLimit = limit;
     }
 
-    #filePath(type, channelId) { 
+    #filePath(type, channelId) {
         // Returns .json path for conversation e.g. data/discord/<type>/<channelId>.json
         const dir = join(DATA_ROOT, type);
         const file = join(dir, `${channelId}.json`);
@@ -30,11 +30,11 @@ class ContextStore {
             return;
         }
 
-        const { file } = this.#filePath(type, channelId)
+        const { file } = this.#filePath(type, channelId);
 
         try {
             const rawData = await readFile(file, "utf8");
-            
+
             const parsed = JSON.parse(rawData);
 
             // Reads JSON into cache map
@@ -54,7 +54,7 @@ class ContextStore {
     async #save(type, channelId) {
         // Get new messages from cache, convert messages to JSON then write to disk
         const { dir, file } = this.#filePath(type, channelId);
-        
+
         const messages = this.#cache.get(channelId) || [];
 
         try {
@@ -95,18 +95,18 @@ class ContextStore {
 
 
     async clear(type, channelId) {
-    // Clears cache and file
-    this.#cache.delete(channelId);
+        // Clears cache and file
+        this.#cache.delete(channelId);
 
-    const { file } = this.#filePath(type, channelId);
-    try {
-        await unlink(file);
-    } catch (error) {
-        if (error.code !== "ENOENT") {
-            console.warn(`Failed to delete history file for channel ${channelId}:`, error.message);
+        const { file } = this.#filePath(type, channelId);
+        try {
+            await unlink(file);
+        } catch (error) {
+            if (error.code !== "ENOENT") {
+                console.warn(`Failed to delete history file for channel ${channelId}:`, error.message);
+            }
         }
     }
-}
 }
 
 // Export singleton instance

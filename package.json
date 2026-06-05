@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
-    "register:commands": "node src/scripts/register-commands.js"
+    "register:commands": "node src/scripts/register-commands.js",
+    "lint": "eslint src/"
   },
   "keywords": [],
   "author": "",
@@ -15,5 +16,9 @@
     "discord.js": "^14.26.4",
     "dotenv": "^17.4.2",
     "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.4.1"
   }
 }

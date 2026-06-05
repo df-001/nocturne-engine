@@ -4,7 +4,7 @@ import { join } from "path";
 
 function loadSystemPrompt(name) {
     try {
-        console.log(`Reading ${name}`)
+        console.log(`Reading ${name}`);
         return readFileSync(join("prompts", name), "utf8");
     } catch (err) {
         console.warn(`Failed to load system prompt "${name}":`, err.message);

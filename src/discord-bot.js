@@ -1,5 +1,5 @@
 import { Client, Events, GatewayIntentBits, Partials, ActivityType } from "discord.js";
-import { DISCORD_TOKEN, CLIENT_ID, STATUS, ACTIVITY } from "./config.js";
+import { DISCORD_TOKEN, STATUS, ACTIVITY } from "./config.js";
 
 import slashListener from "./core/slash-handler.js";
 import dmListener from "./core/dm-handler.js";
