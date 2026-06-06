@@ -97,15 +97,25 @@ export async function* processTextStream({ prompt, temp = TEMPERATURE, sys_promp
             // Accumulated state for the current turn
             let assistantContent = "";
             let finishReason = null;
+            let buffer = "";
 
             const toolCallMap = {};
 
             while (true) {
                 const { value, done } = await reader.read(); // Receives packet
-                if (done) break; // Handles stream end
+
+                // If full delta not present, buffer and reconstruct before processing
+                const chunk = value || "";
+                buffer += chunk;
+
+                const lines = buffer.split("\n");
+                if (!done) {
+                    buffer = lines.pop();
+                } else {
+                    buffer = "";
+                }
 
                 // Expected delta format -> data: {"choices":[{"delta":{"content":"hi"}}
-                const lines = value.split("\n"); // Splits packets if required
                 for (const line of lines) {
                     const cleaned = line.replace(/^data: /, "").trim();
                     if (!cleaned || cleaned === "[DONE]") continue;
@@ -146,6 +156,8 @@ export async function* processTextStream({ prompt, temp = TEMPERATURE, sys_promp
                         // Skip malformed packets
                     }
                 }
+
+                if (done) break;
             }
 
             // Build the assistant message from this turn

@@ -100,7 +100,7 @@ export async function respondStream({ clientContext }) {
         }
 
         if (Date.now() - lastEditTime >= STREAMING_INTERVAL && text.length < MESSAGE_CHAR_LIMIT) {
-            await returnMessage.edit(text.slice(0, 2000) + " |");
+            await returnMessage.edit(text.slice(0, MESSAGE_CHAR_LIMIT) + "... |");
             lastEditTime = Date.now(); // Reset the timer
         }
     }

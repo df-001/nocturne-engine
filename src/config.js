@@ -12,37 +12,81 @@ function loadSystemPrompt(name) {
     }
 }
 
+function float(key) {
+    const value = process.env[key];
+    if (value === undefined || value === null || value === "") {
+        throw new Error(`Missing environment variable ${key}`);
+    }
+    const parsed = parseFloat(value);
+    if (isNaN(parsed)) {
+        throw new Error(`Environment variable ${key} must be a valid float, got: "${value}"`);
+    }
+    return parsed;
+}
+
+function number(key) {
+    const value = process.env[key];
+    if (value === undefined || value === null || value === "") {
+        throw new Error(`Missing environment variable ${key}`);
+    }
+    const parsed = parseInt(value, 10);
+    if (isNaN(parsed)) {
+        throw new Error(`Environment variable ${key} must be a valid integer, got: "${value}"`);
+    }
+    return parsed;
+}
+
+function boolean(key) {
+    const value = process.env[key];
+    if (value === undefined || value === null || value === "") {
+        throw new Error(`Missing environment variable ${key}`);
+    }
+    if (value !== "true" && value !== "false") {
+        throw new Error(`Environment variable ${key} must be "true" or "false", got: "${value}"`);
+    }
+    return value === "true";
+}
+
+function string(key) {
+    const value = process.env[key];
+    if (value === undefined || value === null || value === "") {
+        throw new Error(`Missing environment variable ${key}`);
+    }
+    return value;
+}
+
+
 // Base Config
 
-export const TEMPERATURE = process.env.TEMPERATURE;
-export const MAX_TOKENS = process.env.MAX_TOKENS;
-export const VOICE = process.env.VOICE;
-export const BREATH_ENABLED = process.env.BREATH_ENABLED;
-export const HISTORY_LIMIT = process.env.HISTORY_LIMIT;
+export const TEMPERATURE = float("TEMPERATURE");
+export const MAX_TOKENS = number("MAX_TOKENS");
+export const VOICE = string("VOICE");
+export const BREATH_ENABLED = boolean("BREATH_ENABLED");
+export const HISTORY_LIMIT = number("HISTORY_LIMIT");
 
 // Prompt Setup
 
-export const DM_SYSTEM_PROMPT = loadSystemPrompt(process.env.DM_PROMPT);
-export const VOICE_SYSTEM_PROMPT = loadSystemPrompt(process.env.VOICE_PROMPT);
-export const WEB_SYSTEM_PROMPT = loadSystemPrompt(process.env.WEB_PROMPT);
+export const DM_SYSTEM_PROMPT = loadSystemPrompt(string("DM_PROMPT"));
+export const VOICE_SYSTEM_PROMPT = loadSystemPrompt(string("VOICE_PROMPT"));
+export const WEB_SYSTEM_PROMPT = loadSystemPrompt(string("WEB_PROMPT"));
 
 // Discord Config
 
-export const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
-export const CLIENT_ID = process.env.CLIENT_ID;
-export const STATUS = process.env.STATUS;
-export const ACTIVITY = process.env.ACTIVITY;
-export const BOT_CHANNEL_NAME = process.env.BOT_CHANNEL_NAME;
-export const STREAMING_INTERVAL = process.env.STREAMING_INTERVAL;
-export const MESSAGE_CHAR_LIMIT = process.env.MESSAGE_CHAR_LIMIT;
+export const DISCORD_TOKEN = string("DISCORD_TOKEN");
+export const CLIENT_ID = string("CLIENT_ID");
+export const STATUS = string("STATUS");
+export const ACTIVITY = string("ACTIVITY");
+export const BOT_CHANNEL_NAME = string("BOT_CHANNEL_NAME");
+export const STREAMING_INTERVAL = number("STREAMING_INTERVAL");
+export const MESSAGE_CHAR_LIMIT = number("MESSAGE_CHAR_LIMIT");
 
 // LLM Config
 
-export const LLM_URL = process.env.LLM_URL;
-export const LLM_MODEL = process.env.LLM_MODEL;
-export const LLM_VISION = process.env.LLM_VISION;
-export const ENABLE_TOOLS = process.env.ENABLE_TOOLS;
-export const MAX_TOOL_TURNS = process.env.MAX_TOOL_TURNS;
+export const LLM_URL = string("LLM_URL");
+export const LLM_MODEL = string("LLM_MODEL");
+export const LLM_VISION = boolean("LLM_VISION");
+export const ENABLE_TOOLS = boolean("ENABLE_TOOLS");
+export const MAX_TOOL_TURNS = number("MAX_TOOL_TURNS");
 
 // External Servers
 

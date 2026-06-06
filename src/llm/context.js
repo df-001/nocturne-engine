@@ -110,4 +110,4 @@ class ContextStore {
 }
 
 // Export singleton instance
-export const contextStore = new ContextStore(16);
+export const contextStore = new ContextStore(HISTORY_LIMIT);

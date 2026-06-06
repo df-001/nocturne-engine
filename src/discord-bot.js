@@ -5,6 +5,17 @@ import slashListener from "./core/slash-handler.js";
 import dmListener from "./core/dm-handler.js";
 import guildListener from "./core/guild-handler.js";
 
+function shutdown() {
+    console.log("Ending process...");
+    client.destroy();
+    process.exit(0);
+}
+
+process.on("unhandledRejection", (e) => {
+    // Global error handler to prevent unexpected crashes
+    console.error("Unhandled rejection:", e);
+});
+
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds, // Server events
@@ -34,3 +45,7 @@ client.on(Events.ClientReady, readyClient => {
 });
 
 client.login(DISCORD_TOKEN);
+
+// End on signal interrupt/termination
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
