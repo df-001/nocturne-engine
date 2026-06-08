@@ -4,6 +4,8 @@ import cors from "cors";
 import { authenticateUser } from "./api/firebase.js";
 import { API_PORT } from "./config.js";
 
+import conversationRoute from "./api/routes/conversations.js";
+
 const app = express();
 
 app.use(express.json({ limit: "5mb" }));
@@ -17,6 +19,8 @@ app.get("/health", (req, res) => {
 
 // Protected routes
 app.use(authenticateUser);
+
+app.use(conversationRoute);
 
 // Stub
 

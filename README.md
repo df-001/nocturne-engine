@@ -2,9 +2,9 @@
 > This is a long term rewrite of a past project currently in early development.
 > Expect issues.
 
-# Nocturne
+# Nocturne Engine
 
-## Progress [~45%] Functional
+## Progress [~51%]
 
 ## Implemented
 
@@ -28,3 +28,7 @@
 ## API
 - [x] API Set up with /health
 - [x] Firebase set up
+- [x] JSON File database
+- [x] GET Conversation List
+- [x] POST Create conversation
+- [x] DELETE Delete conversation
