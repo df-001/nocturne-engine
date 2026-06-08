@@ -55,6 +55,8 @@ function string(key) {
     return value;
 }
 
+export const DISCORD_BOT_ENABLED = boolean("DISCORD_BOT_ENABLED");
+export const WEB_API_ENABLED = boolean("WEB_API_ENABLED");
 
 // Base Config
 
@@ -72,13 +74,13 @@ export const WEB_SYSTEM_PROMPT = loadSystemPrompt(string("WEB_PROMPT"));
 
 // Discord Config
 
-export const DISCORD_TOKEN = string("DISCORD_TOKEN");
-export const CLIENT_ID = string("CLIENT_ID");
-export const STATUS = string("STATUS");
-export const ACTIVITY = string("ACTIVITY");
-export const BOT_CHANNEL_NAME = string("BOT_CHANNEL_NAME");
-export const STREAMING_INTERVAL = number("STREAMING_INTERVAL");
-export const MESSAGE_CHAR_LIMIT = number("MESSAGE_CHAR_LIMIT");
+export const DISCORD_TOKEN = DISCORD_BOT_ENABLED ? string("DISCORD_TOKEN") : null;
+export const CLIENT_ID = DISCORD_BOT_ENABLED ? string("CLIENT_ID") : null;
+export const STATUS = DISCORD_BOT_ENABLED ? string("STATUS") : null;
+export const ACTIVITY = process.env.ACTIVITY || "";
+export const BOT_CHANNEL_NAME = process.env.BOT_CHANNEL_NAME || "";
+export const STREAMING_INTERVAL = DISCORD_BOT_ENABLED ? number("STREAMING_INTERVAL") : null;
+export const MESSAGE_CHAR_LIMIT = DISCORD_BOT_ENABLED ? number("MESSAGE_CHAR_LIMIT") : null;
 
 // LLM Config
 
@@ -91,3 +93,9 @@ export const MAX_TOOL_TURNS = number("MAX_TOOL_TURNS");
 // External Servers
 
 // Firebase Config
+
+export const FIREBASE_PROJECT_ID = WEB_API_ENABLED ? string("FIREBASE_PROJECT_ID") : null;
+
+// Web Config
+export const API_PORT = WEB_API_ENABLED ? number("API_PORT") : null;
+

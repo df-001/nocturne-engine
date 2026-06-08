@@ -4,7 +4,7 @@
 
 # Nocturne
 
-## Progress [~38%] Functional
+## Progress [~45%] Functional
 
 ## Implemented
 
@@ -24,3 +24,7 @@
 - [x] Get time tool
 - [x] Message user tool with user list
 - [x] Context injection for message_user
+
+## API
+- [x] API Set up with /health
+- [x] Firebase set up

@@ -13,12 +13,19 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.6",
     "discord.js": "^14.26.4",
     "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "firebase-admin": "^13.10.0",
+    "helmet": "^8.2.0",
     "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^10.4.1"
+  },
+  "overrides": {
+    "uuid": "^14.0.0"
   }
 }

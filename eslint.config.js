@@ -14,6 +14,7 @@ export default [
                 fetch: "readonly",
                 Buffer: "readonly",
                 TextDecoderStream: "readonly",
+                global: "readonly",
             },
         },
         // Custom project styling ruleset

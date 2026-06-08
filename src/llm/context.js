@@ -90,7 +90,7 @@ class ContextStore {
             messages.shift();
         }
 
-        this.#save(type, channelId);
+        await this.#save(type, channelId);
     }
 
 

@@ -7,6 +7,7 @@ async function executeToolCalls(toolCalls, messages, context) {
         const statusText = getToolStatus(tc.function.name, args);
         console.log(`<Tool> ${statusText}`);
 
+        // Notify in discord channel
         if (context.channel) {
             await context.channel.send(`*${statusText}*`);
         }

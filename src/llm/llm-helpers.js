@@ -165,9 +165,15 @@ export async function respondNoStream({ clientContext, slashInteraction = false 
     console.log(`<Response> ${response}`);
     if (response.length > MESSAGE_CHAR_LIMIT) {
         const chunks = splitText(response);
+        let isFirst = true; // Fix for slash commands above max char limit
         for (const chunk of chunks) {
             if (slashInteraction) {
-                await clientContext.interaction.editReply(chunk);
+                if (isFirst) {
+                    await clientContext.interaction.editReply(chunk);
+                    isFirst = false;
+                } else {
+                    await clientContext.interaction.followUp(chunk);
+                }
             } else {
                 await channel.send(chunk);
             }
