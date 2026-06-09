@@ -1,9 +1,8 @@
 import express from "express";
-import crypto from "crypto";
+import crypto from "node:crypto";
 
-import { initializeWebDatabase, getIndex, createConversation, touchIndex, deleteChat } from "../db-helpers.js";
+import { getIndex, createConversation, getConversation, deleteChat } from "../db-helpers.js";
 
-initializeWebDatabase();
 const router = express.Router();
 
 /*
@@ -18,7 +17,7 @@ router.get("/conversations", async (req, res) => {
     const uid = req.user.uid;
 
     try {
-        const data = await getIndex(uid);
+        const data = getIndex(uid);
 
         return res.status(200).json({
             success: true,
@@ -34,20 +33,40 @@ router.get("/conversations", async (req, res) => {
     }
 });
 
+router.get("/conversations/:id", async (req, res) => {
+    const uid = req.user.uid;
+    const conversationId = req.params.id;
+
+    try {
+        const data = getConversation(uid, conversationId);
+
+        return res.status(200).json({
+            success: true,
+            conversation: data
+        });
+    } catch (e) {
+        console.warn(`Error retrieving conversation for ${uid}: ${e}`);
+
+        return res.status(500).json({
+            success: false,
+            error: "Failed to retrieve conversation history."
+        });
+    }
+});
+
+
 router.post("/conversations", async (req, res) => {
     const uid = req.user.uid;
     const conversationId = crypto.randomUUID();
 
     try {
-        await createConversation(uid, conversationId);
+        createConversation(uid, conversationId);
 
         const newMetadata = {
             id: conversationId,
             title: "New Chat",
             updatedAt: Date.now()
         };
-
-        await touchIndex(uid, newMetadata);
 
         return res.status(201).json({
             success: true,
@@ -70,26 +89,25 @@ router.delete("/conversations/:id", async (req, res) => {
     const conversationId = req.params.id;
 
     try {
-        await deleteChat(uid, conversationId);
+        const isDeleted = deleteChat(uid, conversationId);
 
-        return res.status(200).json({ 
-            success: true, 
-            message: "Conversation successfully deleted." 
-        });
-    } catch (e) {
-        console.warn(`Error deleting chat: ${e}`);
-
-        if (e.code === "ENOENT") {
-            return res.status(404).json({
-                success: false,
-                error: "Conversation not found."
+        if (isDeleted) {
+            return res.status(200).json({
+                success: true,
+                message: "Conversation successfully deleted."
             });
         } else {
-            return res.status(500).json({
+            return res.status(404).json({
                 success: false,
-                error: "Failed to delete conversation."
+                error: "Conversation not found or unauthorized access."
             });
         }
+    } catch (e) {
+        console.warn(`Database failure during deletion: ${e}`);
+        return res.status(500).json({
+            success: false,
+            error: "Internal Server Error: Failed to complete deletion request."
+        });
     }
 });
 

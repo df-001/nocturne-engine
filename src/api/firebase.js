@@ -6,9 +6,10 @@ console.log(`Firebase Admin initialized with project ID: ${FIREBASE_PROJECT_ID}`
 
 
 export const auth = admin.auth();
+const localCache = new Map();
 
 /**
- * Express middleware to validate incoming Firebase ID tokens
+ * Express middleware to validate and cache incoming Firebase ID tokens
  */
 export async function authenticateUser(req, res, next) {
     const authHeader = req.headers.authorization;
@@ -20,8 +21,24 @@ export async function authenticateUser(req, res, next) {
 
     const token = authHeader.split("Bearer ")[1];
 
+    const now = Math.floor(Date.now() / 1000); // Convert because .exp is in seconds
+
+    if (localCache.has(token)) {
+        const decodedToken = localCache.get(token);
+        // If token isn't expired
+        if (decodedToken.exp >= now) {
+            req.user = decodedToken;
+            return next();
+        } else {
+            localCache.delete(token);
+        }
+    }
+
     try {
         const decodedToken = await auth.verifyIdToken(token);
+
+        localCache.set(token, decodedToken);
+
         req.user = decodedToken;
         next();
     } catch (e) {

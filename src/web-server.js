@@ -5,6 +5,7 @@ import { authenticateUser } from "./api/firebase.js";
 import { API_PORT } from "./config.js";
 
 import conversationRoute from "./api/routes/conversations.js";
+import chatRoute from "./api/routes/chat.js";
 
 const app = express();
 
@@ -21,8 +22,9 @@ app.get("/health", (req, res) => {
 app.use(authenticateUser);
 
 app.use(conversationRoute);
+app.use(chatRoute);
 
-// Stub
+// Stub app.use(memoryRoute);
 
 // API listener
 app.listen(API_PORT, () => {

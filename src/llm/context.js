@@ -1,6 +1,6 @@
-import { readFile, writeFile, mkdir, unlink } from "fs/promises";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
+import { readFile, writeFile, mkdir, unlink } from "node:fs/promises";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { HISTORY_LIMIT } from "../config.js";
 
 // Resolve absolute path for data/discord

@@ -4,7 +4,7 @@
 
 # Nocturne Engine
 
-## Progress [~51%]
+## Progress [~54%]
 
 ## Implemented
 
@@ -25,10 +25,12 @@
 - [x] Message user tool with user list
 - [x] Context injection for message_user
 
-## API
+### API
 - [x] API Set up with /health
 - [x] Firebase set up
-- [x] JSON File database
+- [x] SQL database
 - [x] GET Conversation List
 - [x] POST Create conversation
 - [x] DELETE Delete conversation
+- [x] GET Message history
+- [x] CHAT SSE streaming 
