@@ -2,15 +2,16 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import { authenticateUser } from "./api/firebase.js";
-import { API_PORT } from "./config.js";
+import { rateLimiter } from "./api/rate-limiter.js";
+import { API_PORT, CORS_ORIGINS } from "./config.js";
 
 import conversationRoute from "./api/routes/conversations.js";
 import chatRoute from "./api/routes/chat.js";
 
 const app = express();
 
-app.use(express.json({ limit: "5mb" }));
-app.use(cors()); // Open to all routes for now, subject to change
+app.use(express.json({ limit: "16mb" }));
+app.use(cors({ origin: CORS_ORIGINS.length > 0 ? CORS_ORIGINS : "*" }));
 app.use(helmet());
 
 // Public routes
@@ -20,6 +21,7 @@ app.get("/health", (req, res) => {
 
 // Protected routes
 app.use(authenticateUser);
+app.use(rateLimiter);
 
 app.use(conversationRoute);
 app.use(chatRoute);

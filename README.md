@@ -4,7 +4,7 @@
 
 # Nocturne Engine
 
-## Progress [~56%]
+## Progress [~58%]
 
 ## Implemented
 
@@ -35,3 +35,5 @@
 - [x] GET Message history
 - [x] CHAT SSE streaming
 - [x] Tool status handling
+- [x] Title summaries
+- [x] Rate limiting

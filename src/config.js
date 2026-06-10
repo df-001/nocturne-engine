@@ -92,10 +92,14 @@ export const MAX_TOOL_TURNS = number("MAX_TOOL_TURNS");
 
 // External Servers
 
-// Firebase Config
-
-export const FIREBASE_PROJECT_ID = WEB_API_ENABLED ? string("FIREBASE_PROJECT_ID") : null;
 
 // Web Config
+export const FIREBASE_PROJECT_ID = WEB_API_ENABLED ? string("FIREBASE_PROJECT_ID") : null;
 export const API_PORT = WEB_API_ENABLED ? number("API_PORT") : null;
+export const SQLITE_DB_NAME = process.env.SQLITE_DB_NAME || "web.db";
+export const CORS_ORIGINS = (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || "")
+    .split(",")
+    .map((url) => url.trim())
+    .filter(Boolean); // Removes any empty values from array
+
 

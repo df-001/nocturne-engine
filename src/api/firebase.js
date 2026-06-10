@@ -8,6 +8,17 @@ console.log(`Firebase Admin initialized with project ID: ${FIREBASE_PROJECT_ID}`
 export const auth = admin.auth();
 const localCache = new Map();
 
+// Remove expired tokens hourly
+setInterval(() => {
+    const now = Math.floor(Date.now() / 1000);
+    for (const [token, decodedToken] of localCache.entries()) {
+        if (decodedToken.exp < now) {
+            localCache.delete(token);
+        }
+    }
+}, 60 * 60 * 1000).unref();
+
+
 /**
  * Express middleware to validate and cache incoming Firebase ID tokens
  */

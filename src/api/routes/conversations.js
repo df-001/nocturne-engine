@@ -32,6 +32,13 @@ router.get("/conversations/:id", (req, res) => {
     try {
         const data = getConversation(uid, conversationId);
 
+        if (!data) {
+            return res.status(404).json({
+                success: false,
+                error: "Conversation not found or unauthorized access."
+            });
+        }
+
         return res.status(200).json({
             success: true,
             conversation: data

@@ -4,11 +4,12 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { processText } from "../llm/llm-client.js";
+import { SQLITE_DB_NAME } from "../config.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_ROOT = join(__dirname, "..", "..", "data", "web");
 mkdirSync(DATA_ROOT, { recursive: true });
-const db = new DatabaseSync(join(DATA_ROOT, "web.db"));
+const db = new DatabaseSync(join(DATA_ROOT, SQLITE_DB_NAME));
 
 
 function initializeWebDatabase() {
