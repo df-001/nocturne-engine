@@ -4,7 +4,7 @@
 
 # Nocturne Engine
 
-## Progress [~54%]
+## Progress [~56%]
 
 ## Implemented
 
@@ -33,4 +33,5 @@
 - [x] POST Create conversation
 - [x] DELETE Delete conversation
 - [x] GET Message history
-- [x] CHAT SSE streaming 
+- [x] CHAT SSE streaming
+- [x] Tool status handling

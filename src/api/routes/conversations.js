@@ -5,15 +5,7 @@ import { getIndex, createConversation, getConversation, deleteChat } from "../db
 
 const router = express.Router();
 
-/*
-Data structure
-web/
-    firebaseUUID/
-        conversationId.json
-        index.json
-*/
-
-router.get("/conversations", async (req, res) => {
+router.get("/conversations", (req, res) => {
     const uid = req.user.uid;
 
     try {
@@ -33,7 +25,7 @@ router.get("/conversations", async (req, res) => {
     }
 });
 
-router.get("/conversations/:id", async (req, res) => {
+router.get("/conversations/:id", (req, res) => {
     const uid = req.user.uid;
     const conversationId = req.params.id;
 
@@ -55,23 +47,17 @@ router.get("/conversations/:id", async (req, res) => {
 });
 
 
-router.post("/conversations", async (req, res) => {
+router.post("/conversations", (req, res) => {
     const uid = req.user.uid;
     const conversationId = crypto.randomUUID();
 
     try {
-        createConversation(uid, conversationId);
-
-        const newMetadata = {
-            id: conversationId,
-            title: "New Chat",
-            updatedAt: Date.now()
-        };
+        const data = createConversation(uid, conversationId);
 
         return res.status(201).json({
             success: true,
             conversationId,
-            metadata: newMetadata
+            metadata: data
         });
 
     } catch (e) {
@@ -84,7 +70,7 @@ router.post("/conversations", async (req, res) => {
     }
 });
 
-router.delete("/conversations/:id", async (req, res) => {
+router.delete("/conversations/:id", (req, res) => {
     const uid = req.user.uid;
     const conversationId = req.params.id;
 

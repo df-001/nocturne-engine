@@ -1,4 +1,5 @@
 import express from "express";
+import { WEB_SYSTEM_PROMPT, TEMPERATURE } from "../../config.js";
 import { processTextStream } from "../../llm/llm-client.js";
 import { getConversation, appendChatMessage } from "../db-helpers.js";
 
@@ -41,9 +42,15 @@ router.post("/chat", async (req, res) => {
 
         const textStream = processTextStream({
             prompt,
-            temp: 2,
-            sys_prompt: "You are a helpful assistant.",
-            history: cleanHistory
+            temp: TEMPERATURE,
+            sys_prompt: WEB_SYSTEM_PROMPT,
+            history: cleanHistory,
+            context: {
+                // Tool context for notifying web user of tool calls
+                onToolStatus: (statusText) => {
+                    res.write(`data: ${JSON.stringify({ toolStatus: statusText })}\n\n`);
+                }
+            }
         });
 
         appendChatMessage(conversationId, "user", prompt);

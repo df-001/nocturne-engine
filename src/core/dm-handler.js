@@ -15,7 +15,10 @@ export default (client) => {
                 message: message,
                 channel: message.channel,
                 author: message.author,
-                type: "dm"
+                type: "dm",
+                onToolStatus: async (statusText) => {
+                    await message.channel.send(`*${statusText}*`);
+                }
             };
 
             await respondStream({ clientContext });
@@ -32,7 +35,10 @@ export default (client) => {
                 message: message,
                 channel: message.channel,
                 author: message.author,
-                type: "dm"
+                type: "dm",
+                onToolStatus: async (statusText) => {
+                    await message.channel.send(`*${statusText}*`);
+                }
             };
 
             await respondNoStream({ clientContext });

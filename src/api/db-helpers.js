@@ -8,9 +8,6 @@ const DATA_ROOT = join(__dirname, "..", "..", "data", "web");
 mkdirSync(DATA_ROOT, { recursive: true });
 const db = new DatabaseSync(join(DATA_ROOT, "web.db"));
 
-// run with .prepare then .run
-// with keys will be -> .prepare VALUES($id) then run({$id: "<uuid>"; cool json format})
-// data retrieval .prepare(...).all() or .prepare(...).get()
 
 function initializeWebDatabase() {
     // Config
@@ -110,17 +107,24 @@ export function createConversation(uid, conversationId, title = "New Chat") {
 }
 
 // Add a chat message to an existing conversation
-export function appendChatMessage(conversationId, role, content) { // currently multiple calls in one function, atomic transaction soon
+export function appendChatMessage(conversationId, role, content) {
     const now = Date.now();
-    const stmt = db.prepare(`
+    const insertStmt = db.prepare(`
         INSERT INTO messages (conversation_id, role, content, created_at)
         VALUES (?,?,?,?)
     `);
+    const updateStmt = db.prepare("UPDATE conversations SET updated_at = ? WHERE id = ?");
 
-    stmt.run(conversationId, role, content, now);
-
-    const updStmt = db.prepare("UPDATE conversations SET updated_at = ? WHERE id = ?");
-    updStmt.run(now, conversationId);
+    // Transaction ensures both operations are linked so database doesnt end up out of sync
+    db.exec("BEGIN TRANSACTION;");
+    try {
+        insertStmt.run(conversationId, role, content, now);
+        updateStmt.run(now, conversationId);
+        db.exec("COMMIT;");
+    } catch (err) {
+        db.exec("ROLLBACK;");
+        throw err;
+    }
 
     return true;
 }

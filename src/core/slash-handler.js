@@ -58,7 +58,10 @@ export default (client) => {
                     author: interaction.user,
                     message: messageText,
                     type: "guild",
-                    interaction: interaction
+                    interaction: interaction,
+                    onToolStatus: async (statusText) => {
+                        await interaction.channel.send(`*${statusText}*`);
+                    }
                 };
 
                 await respondNoStream({ clientContext, slashInteraction: true });
