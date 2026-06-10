@@ -3,6 +3,8 @@ import { mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { processText } from "../llm/llm-client.js";
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_ROOT = join(__dirname, "..", "..", "data", "web");
 mkdirSync(DATA_ROOT, { recursive: true });
@@ -135,4 +137,36 @@ export function deleteChat(uid, conversationId) {
     const result = stmt.run(conversationId, uid);
 
     return result.changes > 0; // Returns 1 for success and 0 for failure
+}
+
+// Summarize for conversation title
+export async function summarizeConversation(uid, conversationId) {
+    const firstMsg = db.prepare(`
+        SELECT content FROM messages
+        WHERE conversation_id = ?
+        ORDER BY id ASC
+        LIMIT 1
+    `).get(conversationId);
+
+    if (!firstMsg || !firstMsg.content) return; // Catch firstMsg null
+
+    try {
+        const rawTitle = await processText({
+            prompt: `Summarize this user request into a short 1-5 word title. Respond with ONLY the title, no quotation marks, no punctuation, and no extra text:\n\n"${firstMsg.content}"`,
+            history: []
+        });
+
+        // Remove quotes and enforce a 64 character limit
+        const title = rawTitle.replace(/^["']|["']$/g, "").trim().slice(0, 64);
+
+        const stmt = db.prepare(`
+            UPDATE conversations
+            SET title = ?
+            WHERE id = ? AND uid = ?
+        `);
+
+        stmt.run(title, conversationId, uid);
+    } catch (err) {
+        console.warn(`Failed to summarize conversation ${conversationId}:`, err);
+    }
 }

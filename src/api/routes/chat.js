@@ -1,7 +1,7 @@
 import express from "express";
 import { WEB_SYSTEM_PROMPT, TEMPERATURE } from "../../config.js";
 import { processTextStream } from "../../llm/llm-client.js";
-import { getConversation, appendChatMessage } from "../db-helpers.js";
+import { getConversation, appendChatMessage, summarizeConversation } from "../db-helpers.js";
 
 const router = express.Router();
 
@@ -54,6 +54,13 @@ router.post("/chat", async (req, res) => {
         });
 
         appendChatMessage(conversationId, "user", prompt);
+
+        // Summarize conversation on the first message (Streams at same time as response)
+        if (cleanHistory.length === 0) {
+            summarizeConversation(uid, conversationId).catch((e) => {
+                console.warn(`Error generating conversation title: ${e}`);
+            });
+        }
 
         let response = "";
         for await (const chunk of textStream) {
