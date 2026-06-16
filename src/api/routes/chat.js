@@ -2,12 +2,18 @@ import express from "express";
 import { WEB_SYSTEM_PROMPT, TEMPERATURE } from "../../config.js";
 import { processTextStream } from "../../llm/llm-client.js";
 import { getConversation, appendChatMessage, summarizeConversation } from "../db-helpers.js";
+import { promises as fs } from "node:fs";
+import { join, dirname, basename } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const UPLOADS_DIR = join(__dirname, "..", "..", "..", "data", "web", "uploads");
 
 const router = express.Router();
 
 router.post("/chat", async (req, res) => {
     const uid = req.user.uid;
-    const { prompt, conversationId } = req.body;
+    const { prompt, conversationId, images } = req.body;
 
     if (!prompt || !conversationId) {
         return res.status(400).json({
@@ -40,8 +46,23 @@ router.post("/chat", async (req, res) => {
 
         res.flushHeaders();
 
+        const base64Images = [];
+        if (images && images.length > 0) {
+            for (const imgUrl of images) {
+                const filename = basename(imgUrl);
+                const filePath = join(UPLOADS_DIR, filename);
+                try {
+                    const fileBuffer = await fs.readFile(filePath);
+                    base64Images.push(`data:image/jpeg;base64,${fileBuffer.toString("base64")}`);
+                } catch (err) {
+                    console.warn(`Failed to read image ${imgUrl} for LLM:`, err);
+                }
+            }
+        }
+
         const textStream = processTextStream({
             prompt,
+            images: base64Images,
             temp: TEMPERATURE,
             sys_prompt: WEB_SYSTEM_PROMPT,
             history: cleanHistory,

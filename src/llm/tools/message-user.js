@@ -39,8 +39,13 @@ export const messageUser = {
             return `User "${username}" not found. Known users: ${knownUsernames().join(", ")}`;
         }
 
+        const client = context.client || global.discordClient;
+        if (!client) { // If discord bot disabled and bot uses tool from web
+            return `Failed to message ${username}: Discord client is not available in this environment.`;
+        }
+
         try {
-            const user = await context.client.users.fetch(userId);
+            const user = await client.users.fetch(userId);
             const sentMessage = await user.send(content);
 
             const dmChannelId = sentMessage.channel.id;

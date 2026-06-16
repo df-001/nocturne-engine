@@ -9,6 +9,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
+    "build:web": "node scripts/build-web.js",
     "register:commands": "node src/scripts/register-commands.js",
     "lint": "eslint src/"
   },
@@ -23,10 +24,12 @@
     "express-rate-limit": "^8.5.2",
     "firebase-admin": "^13.10.0",
     "helmet": "^8.2.0",
+    "multer": "^2.2.0",
     "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "esbuild": "^0.28.1",
     "eslint": "^10.4.1"
   },
   "overrides": {

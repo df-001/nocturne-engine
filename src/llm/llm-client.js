@@ -21,12 +21,39 @@ async function executeToolCalls(toolCalls, messages, context) {
     }
 }
 
-export async function processText({ prompt, temp = TEMPERATURE, sys_prompt = "", history = [], context = {} }) {
+function formatUserContent(prompt, images) {
+    // Add images from web client to prompt
+    if (!images || images.length === 0) {
+        return prompt;
+    }
+
+    const promptText = typeof prompt === "string" ? prompt : (prompt[0]?.text || "");
+    const content = [
+        {
+            type: "text",
+            text: promptText
+        }
+    ];
+
+    for (const img of images) {
+        content.push({
+            type: "image_url",
+            image_url: {
+                url: img
+            }
+        });
+    }
+
+    return content;
+}
+
+export async function processText({ prompt, images = [], temp = TEMPERATURE, sys_prompt = "", history = [], context = {} }) {
     try {
+        const assembledPrompt = formatUserContent(prompt, images);
         const messages = [
             { role: "system", content: sys_prompt },
             ...history,
-            { role: "user", content: prompt }
+            { role: "user", content: assembledPrompt }
         ];
 
         for (let i = 0; i < MAX_TOOL_TURNS; i++) {
@@ -65,12 +92,13 @@ export async function processText({ prompt, temp = TEMPERATURE, sys_prompt = "",
     }
 }
 
-export async function* processTextStream({ prompt, temp = TEMPERATURE, sys_prompt = "", history = [], context = {} }) {
+export async function* processTextStream({ prompt, images = [], temp = TEMPERATURE, sys_prompt = "", history = [], context = {} }) {
     try {
+        const assembledPrompt = formatUserContent(prompt, images);
         const messages = [
             { role: "system", content: sys_prompt },
             ...history,
-            { role: "user", content: prompt }
+            { role: "user", content: assembledPrompt }
         ];
 
         for (let i = 0; i < MAX_TOOL_TURNS; i++) {

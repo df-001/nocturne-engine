@@ -4,7 +4,7 @@
 
 # Nocturne Engine
 
-## Progress [~58%]
+## Progress [~66%]
 
 ## Implemented
 
@@ -37,3 +37,4 @@
 - [x] Tool status handling
 - [x] Title summaries
 - [x] Rate limiting
+- [x] Image support
