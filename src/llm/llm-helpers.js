@@ -4,6 +4,31 @@ import { splitText } from "../llm/text-splitter.js";
 import { processText, processTextStream } from "../llm/llm-client.js";
 import sharp from "sharp";
 
+export async function processImageToBuffer(input) {
+    let buffer;
+
+    if (typeof input === "string") {
+        const response = await fetch(input);
+        const arrayBuffer = await response.arrayBuffer();
+        buffer = Buffer.from(arrayBuffer);
+    } else if (Buffer.isBuffer(input)) {
+        buffer = input;
+    } else {
+        throw new Error("Invalid image input type.");
+    }
+
+    return await sharp(buffer)
+        .rotate()
+        .resize({ width: 800, height: 800, fit: "inside", withoutEnlargement: true }) // Maintain aspect after resize
+        .jpeg({ quality: 80 })
+        .toBuffer();
+}
+
+export async function processImageToDataUri(input) {
+    const processed = await processImageToBuffer(input);
+    return `data:image/jpeg;base64,${processed.toString("base64")}`;
+}
+
 export async function buildPrompt(message) {
     // If vision is disabled or no attachments, return plain string
 
@@ -18,12 +43,8 @@ export async function buildPrompt(message) {
 
     for (const attachment of message.attachments.values()) {
         if (attachment.contentType?.startsWith("image/") && LLM_VISION) {
-            const response = await fetch(attachment.url);
-            const buffer = await response.arrayBuffer();
-            const jpeg = await sharp(Buffer.from(buffer)).jpeg().toBuffer();
-            const base64 = jpeg.toString("base64");
-
-            imageAttachments.push(`data:image/jpeg;base64,${base64}`);
+            const dataUri = await processImageToDataUri(attachment.url);
+            imageAttachments.push(dataUri);
         }
     }
 
@@ -165,9 +186,15 @@ export async function respondNoStream({ clientContext, slashInteraction = false 
     console.log(`<Response> ${response}`);
     if (response.length > MESSAGE_CHAR_LIMIT) {
         const chunks = splitText(response);
+        let isFirst = true; // Fix for slash commands above max char limit
         for (const chunk of chunks) {
             if (slashInteraction) {
-                await clientContext.interaction.editReply(chunk);
+                if (isFirst) {
+                    await clientContext.interaction.editReply(chunk);
+                    isFirst = false;
+                } else {
+                    await clientContext.interaction.followUp(chunk);
+                }
             } else {
                 await channel.send(chunk);
             }

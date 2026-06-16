@@ -27,6 +27,9 @@ const client = new Client({
         Partials.Channel // DMs from server mutuals
     ]
 });
+// Expose client globally for web-server
+global.discordClient = client;
+
 // Create listeners for all event types
 slashListener(client);
 dmListener(client);

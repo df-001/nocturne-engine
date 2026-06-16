@@ -2,9 +2,9 @@
 > This is a long term rewrite of a past project currently in early development.
 > Expect issues.
 
-# Nocturne
+# Nocturne Engine
 
-## Progress [~38%] Functional
+## Progress [~66%]
 
 ## Implemented
 
@@ -24,3 +24,17 @@
 - [x] Get time tool
 - [x] Message user tool with user list
 - [x] Context injection for message_user
+
+### API
+- [x] API Set up with /health
+- [x] Firebase set up
+- [x] SQL database
+- [x] GET Conversation List
+- [x] POST Create conversation
+- [x] DELETE Delete conversation
+- [x] GET Message history
+- [x] CHAT SSE streaming
+- [x] Tool status handling
+- [x] Title summaries
+- [x] Rate limiting
+- [x] Image support

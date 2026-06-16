@@ -1,6 +1,6 @@
-import { readFileSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { contextStore } from "../context.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -39,8 +39,13 @@ export const messageUser = {
             return `User "${username}" not found. Known users: ${knownUsernames().join(", ")}`;
         }
 
+        const client = context.client || global.discordClient;
+        if (!client) { // If discord bot disabled and bot uses tool from web
+            return `Failed to message ${username}: Discord client is not available in this environment.`;
+        }
+
         try {
-            const user = await context.client.users.fetch(userId);
+            const user = await client.users.fetch(userId);
             const sentMessage = await user.send(content);
 
             const dmChannelId = sentMessage.channel.id;

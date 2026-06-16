@@ -11,9 +11,12 @@ export default [
                 process: "readonly",
                 setTimeout: "readonly",
                 clearTimeout: "readonly",
+                setInterval: "readonly",
+                clearInterval: "readonly",
                 fetch: "readonly",
                 Buffer: "readonly",
                 TextDecoderStream: "readonly",
+                global: "readonly",
             },
         },
         // Custom project styling ruleset
