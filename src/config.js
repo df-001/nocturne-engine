@@ -91,7 +91,7 @@ export const ENABLE_TOOLS = boolean("ENABLE_TOOLS");
 export const MAX_TOOL_TURNS = number("MAX_TOOL_TURNS");
 
 // External Servers
-
+export const IMG_URL = process.env.IMG_URL;
 
 // Web Config
 export const FIREBASE_PROJECT_ID = WEB_API_ENABLED ? string("FIREBASE_PROJECT_ID") : null;

@@ -1,8 +1,9 @@
 import { ENABLE_TOOLS } from "../../config.js";
 import { getCurrentTime } from "./get-current-time.js";
 import { messageUser } from "./message-user.js";
+import { imageGen } from "./image-gen.js";
 
-const tools = [getCurrentTime, messageUser];
+const tools = [getCurrentTime, messageUser, imageGen];
 
 /* 
     ARGS:

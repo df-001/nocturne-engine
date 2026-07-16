@@ -4,7 +4,7 @@
 
 # Nocturne Engine
 
-## Progress [~66%]
+## Progress [~68%]
 
 ## Implemented
 
@@ -38,3 +38,4 @@
 - [x] Title summaries
 - [x] Rate limiting
 - [x] Image support
+- [x] Image storage with database

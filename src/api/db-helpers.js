@@ -43,13 +43,12 @@ function initializeWebDatabase() {
             FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE
         );
     `);
-    // TODO CURRENTLY NOT IMPLEMENTED
     db.exec(`
         CREATE TABLE IF NOT EXISTS message_images (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             message_id INTEGER NOT NULL,
             url TEXT NOT NULL,
-            image_type TEXT NOT NULL DEFAULT 'input',
+            image_type TEXT NOT NULL DEFAULT "input",
             FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE
         );
     `);
@@ -57,7 +56,7 @@ function initializeWebDatabase() {
     // Indexes
     db.exec("CREATE INDEX IF NOT EXISTS idx_conversations_uid ON conversations(uid);");
     db.exec("CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);");
-    db.exec("CREATE INDEX IF NOT EXISTS idx_message_images_message_id ON message_images(message_id);"); // ALSO TODO
+    db.exec("CREATE INDEX IF NOT EXISTS idx_message_images_message_id ON message_images(message_id);");
 }
 
 initializeWebDatabase();
@@ -79,16 +78,39 @@ export function getConversation(uid, conversationId) {
     const exists = db.prepare("SELECT 1 FROM conversations WHERE uid = ? AND id = ?").get(uid, conversationId);
     if (!exists) {
         return null;
-    };
+    }
 
-    const stmt = db.prepare(`
+    const messages = db.prepare(`
         SELECT id, role, content, created_at as createdAt
         FROM messages
         WHERE conversation_id = ?
         ORDER BY id ASC
-    `);
-    // image shit not finished yet
-    return stmt.all(conversationId);
+    `).all(conversationId);
+
+    if (messages.length === 0) {
+        return [];
+    }
+
+    const imageRows = db.prepare(`
+        SELECT mi.message_id, mi.url
+        FROM message_images mi
+        JOIN messages m ON mi.message_id = m.id
+        WHERE m.conversation_id = ?
+    `).all(conversationId);
+
+    const imagesByMessageId = new Map();
+    for (const img of imageRows) {
+        if (!imagesByMessageId.has(img.message_id)) {
+            imagesByMessageId.set(img.message_id, []);
+        }
+        imagesByMessageId.get(img.message_id).push(img.url);
+    }
+
+    for (const msg of messages) {
+        msg.images = imagesByMessageId.get(msg.id) || [];
+    }
+
+    return messages;
 }
 
 // Create a new listed conversation
@@ -110,18 +132,30 @@ export function createConversation(uid, conversationId, title = "New Chat") {
 }
 
 // Add a chat message to an existing conversation
-export function appendChatMessage(conversationId, role, content) {
+export function appendChatMessage(conversationId, role, content, images = [], imageType = "input") {
     const now = Date.now();
-    const insertStmt = db.prepare(`
+    const insertMsgStmt = db.prepare(`
         INSERT INTO messages (conversation_id, role, content, created_at)
         VALUES (?,?,?,?)
+    `);
+    const insertImgStmt = db.prepare(`
+        INSERT INTO message_images (message_id, url, image_type)
+        VALUES (?,?,?)
     `);
     const updateStmt = db.prepare("UPDATE conversations SET updated_at = ? WHERE id = ?");
 
     // Transaction ensures both operations are linked so database doesnt end up out of sync
     db.exec("BEGIN TRANSACTION;");
     try {
-        insertStmt.run(conversationId, role, content, now);
+        const info = insertMsgStmt.run(conversationId, role, content, now);
+        const messageId = info.lastInsertRowid;
+
+        if (images && images.length > 0) {
+            for (const url of images) {
+                insertImgStmt.run(messageId, url, imageType);
+            }
+        }
+
         updateStmt.run(now, conversationId);
         db.exec("COMMIT;");
     } catch (err) {
