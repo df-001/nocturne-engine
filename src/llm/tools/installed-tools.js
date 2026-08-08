@@ -3,8 +3,9 @@ import { getCurrentTime } from "./get-current-time.js";
 import { messageUser } from "./message-user.js";
 import { imageGen } from "./image-gen.js";
 import { runCode } from "./code-sandbox.js";
+import { webSearch } from "./web-search.js";
 
-const tools = [getCurrentTime, messageUser, imageGen, runCode];
+const tools = [getCurrentTime, messageUser, imageGen, runCode, webSearch];
 
 /* 
     ARGS:
