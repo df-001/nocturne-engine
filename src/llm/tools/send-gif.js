@@ -48,11 +48,10 @@ export const sendGif = {
         }
 
         if (context.channel) {
-            console.log("Detected platform: Discord")
             await context.channel.send(gifUrl);
             return `GIF successfully posted to Discord channel.`
         }
-        console.log("Detected platform: Web")
+
         return `GIF found. Include this exact markdown image in your response so it renders for the user: ![${prompt}](${gifUrl})`;
     }
 };

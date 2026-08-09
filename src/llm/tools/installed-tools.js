@@ -5,8 +5,9 @@ import { imageGen } from "./image-gen.js";
 import { runCode } from "./code-sandbox.js";
 import { webSearch } from "./web-search.js";
 import { sendGif } from "./send-gif.js";
+import { createReminder } from "./create-reminder.js";
 
-const tools = [getCurrentTime, messageUser, imageGen, runCode, webSearch, sendGif];
+const tools = [getCurrentTime, messageUser, imageGen, runCode, webSearch, sendGif, createReminder];
 
 /* 
     ARGS:

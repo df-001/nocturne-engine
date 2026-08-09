@@ -60,6 +60,8 @@ router.post("/chat", async (req, res) => {
             }
         }
 
+        console.log(`<Web REQ>: ${prompt}`)
+
         const textStream = processTextStream({
             prompt,
             images: base64Images,
@@ -98,6 +100,8 @@ router.post("/chat", async (req, res) => {
                 outputImages.push(match[1]);
             }
         }
+
+        console.log(`<Web RES>: ${response}`)
 
         if (outputImages.length > 0) {
             appendChatMessage(conversationId, "assistant", response, outputImages, "output");
