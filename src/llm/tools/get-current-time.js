@@ -11,6 +11,16 @@ export const getCurrentTime = {
     status: () => "Checking time...",
 
     async execute(_args, _context) {
-        return new Date().toISOString();
+        const options = {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false
+        };
+
+        return new Date().toLocaleString("en-GB", options);
     }
 };

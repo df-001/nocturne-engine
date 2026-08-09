@@ -88,7 +88,7 @@ export async function respondStream({ clientContext }) {
 
     let returnMessage = null;
 
-    console.log(`<Message from ${author.username}>: ${message}`);
+    console.log(`<Message from ${author.username}> ${message}`);
 
     let text = "";
     let lastEditTime = Date.now(); // Date object for timed streams
@@ -152,7 +152,7 @@ export async function respondNoStream({ clientContext, slashInteraction = false 
 
     if (!slashInteraction) await channel.sendTyping();
 
-    console.log(`<Message from ${author.username}>: ${message}`);
+    console.log(`<Message from ${author.username}> ${message}`);
     const history = await contextStore.get(type, channel.id);
 
     let prompt;

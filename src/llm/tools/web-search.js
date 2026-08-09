@@ -23,7 +23,7 @@ export const webSearch = {
     status: (args) => `Searching the web for "${args.query}"...`,
 
     async execute(args) {
-        const { query } = args
+        const { query } = args;
 
         if (!query) return "Search failed: No query provided.";
         if (!TAVILY_API_KEYS?.length) {

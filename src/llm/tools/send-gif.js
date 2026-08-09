@@ -30,7 +30,7 @@ export const sendGif = {
         let gifUrl = null;
         for (const apiKey of GIPHY_API_KEYS) {
             try {
-                const url = `https://api.giphy.com/v1/gifs/search?api_key=${apiKey}&q=${encodeURIComponent(prompt)}&limit=10`
+                const url = `https://api.giphy.com/v1/gifs/search?api_key=${apiKey}&q=${encodeURIComponent(prompt)}&limit=10`;
                 const res = await fetch(url);
                 if (!res.ok) continue;
 
@@ -49,7 +49,7 @@ export const sendGif = {
 
         if (context.channel) {
             await context.channel.send(gifUrl);
-            return `GIF successfully posted to Discord channel.`
+            return "GIF successfully posted to Discord channel.";
         }
 
         return `GIF found. Include this exact markdown image in your response so it renders for the user: ![${prompt}](${gifUrl})`;

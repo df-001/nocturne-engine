@@ -17,8 +17,8 @@ function parseDuration(str) {
     const unit = str.slice(-1);
     const value = str.slice(0, -1);
 
-    if (!unit) return "No unit supplied"
-    return value * multipliers[unit]
+    if (!unit) return "No unit supplied";
+    return value * multipliers[unit];
 };
 
 export const createReminder = {
@@ -79,7 +79,7 @@ export const createReminder = {
         const client = context.client || global.discordClient;
         if (!client) {
             // If discord client disabled
-            return `Failed to set reminder: Discord client is not available in this environment.`;
+            return "Failed to set reminder: Discord client is not available in this environment.";
         }
 
         // Schedule reminder dispatch
