@@ -114,6 +114,17 @@ for (const key of splitTavilyKeys) {
 }
 export const TAVILY_API_KEYS = parsedTavilyKeys;
 
+// Giphy Config
+const parsedGiphyKeys = [];
+const rawGiphyKeys = process.env.GIPHY_API_KEYS || "";
+const splitGiphyKeys = rawGiphyKeys.split("\n");
+for (const key of splitGiphyKeys) {
+    const trimmedKey = key.trim();
+    if (trimmedKey) {
+        parsedGiphyKeys.push(trimmedKey);
+    }
+}
+export const GIPHY_API_KEYS = parsedGiphyKeys;
 
 
 

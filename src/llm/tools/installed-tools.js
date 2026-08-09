@@ -4,8 +4,9 @@ import { messageUser } from "./message-user.js";
 import { imageGen } from "./image-gen.js";
 import { runCode } from "./code-sandbox.js";
 import { webSearch } from "./web-search.js";
+import { sendGif } from "./send-gif.js";
 
-const tools = [getCurrentTime, messageUser, imageGen, runCode, webSearch];
+const tools = [getCurrentTime, messageUser, imageGen, runCode, webSearch, sendGif];
 
 /* 
     ARGS:

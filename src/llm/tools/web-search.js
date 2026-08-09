@@ -1,7 +1,5 @@
 import { TAVILY_API_KEYS } from "../../config.js";
 
-let keyIndex = 0;
-
 export const webSearch = {
     definition: {
         type: "function",
@@ -22,9 +20,11 @@ export const webSearch = {
         }
     },
 
-    status: (args) => `Searching the web for "${args?.query || ""}"...`,
+    status: (args) => `Searching the web for "${args.query}"...`,
 
-    async execute({ query }) {
+    async execute(args) {
+        const { query } = args
+
         if (!query) return "Search failed: No query provided.";
         if (!TAVILY_API_KEYS?.length) {
             console.warn("WARNING: API Keys not set, search unavailable.");
@@ -32,8 +32,7 @@ export const webSearch = {
         }
 
         // try each key in order until a request succeeds
-        for (let i = 0; i < TAVILY_API_KEYS.length; i++) {
-            const apiKey = TAVILY_API_KEYS[keyIndex++ % TAVILY_API_KEYS.length];
+        for (const apiKey of TAVILY_API_KEYS) {
             try {
                 const res = await fetch("https://api.tavily.com/search", {
                     method: "POST",
