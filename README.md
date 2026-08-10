@@ -1,52 +1,95 @@
 > [!IMPORTANT]
-> This is a long term rewrite of a past project currently in early development.
-> Expect issues.
+> Nocturne Engine is rewrite of a past project in early stages. It is currently in active development and may contain breaking changes or bugs. Everything is subject to change.
 
-# Nocturne Engine
+# 🌙 Nocturne Engine
 
-## Progress [~81%]
+A modular, Discord bot and web engine built on Node.js.
 
-## Implemented
+---
 
-### Core
-- [x] Bot framework for Discord.js
-- [x] Basic DM -> LLM -> Response loop
-- [x] Context storage between messages
-- [x] Slash command implementation
-- [x] Streamed responses
-- [x] Custom status
-- [x] Image input
-- [x] Guild chat commands
-- [x] Guild bot channel
+[Website](https://nocturne.darkfast.uk) · [Github](https://github.com/df-001/nocturne-engine) · [Issues](https://github.com/df-001/nocturne-engine/issues)
 
-### Tools
-- [x] Base tool integration
-- [x] Get time tool
-- [x] Message user tool with user list
-- [x] Context injection for message_user
-- [x] Internet search
-- [x] Send GIF/image tool
-- [x] Run code in a sandbox (isolated-vm [JS])
-- [x] Set reminder (DM)
-- [x] Generate image (Other local server)
+## Features
 
-### API
-- [x] API Set up with /health
-- [x] Firebase set up
-- [x] SQL database
-- [x] GET Conversation List
-- [x] POST Create conversation
-- [x] DELETE Delete conversation
-- [x] GET Message history
-- [x] CHAT SSE streaming
-- [x] Tool status handling
-- [x] Title summaries
-- [x] Rate limiting
-- [x] Image support
-- [x] Image storage with database
+- **Discord Bot Framework**: Supports direct messaging, guild chat integration, designated bot channels, custom bot status, and streaming text responses using Discord.js.
+- **LLM & Vision Support**: Uses OpenAI compatible endpoints with image multimodality.
+- **Modular Tooling System**: Easy to create and use tool integrations. 
+- **REST & SSE Web API**: Express 5 server featuring Server-Sent Events (SSE) chat streaming, rate limiting, security headers (Helmet), and title summarization.
 
-### Web
-- [x] Public Website
-- [x] API integration
-- [x] Markdown Support
-- [x] KaTeX support
+## Included Tools
+  - **Code Sandbox**: Secure JavaScript code execution powered by `isolated-vm`.
+  - **Search Integrations**: Internet search with Tavily and GIF queries via Giphy.
+  - **Image Generation**: Local and remote AI image generation integration.
+  - **Direct Messaging**: Direct messaging with context injection.
+  - **Utility Tools**: Real-time clock and reminders.
+
+## Project Stack
+
+| Layer | Dependency |
+| --- | --- |
+| **Runtime** | Node.js (`>=24.0.0`) |
+| **Web API Framework** | Express 5 |
+| **Discord Integration** | Discord.js (v14) |
+| **LLM Backend** | OpenAI Endpoints |
+| **Execution Sandbox** | `isolated-vm` |
+| **Database & Auth** | SQLite & Firebase Admin |
+| **Lint** | ESLint |
+| **Utilities** | Sharp, Helmet, CORS, Multer |
+
+---
+
+## Prerequisites
+
+> [!WARNING]
+> `isolated-vm` compiles C++ binaries during `npm install`. Windows users require Python 3.x and Visual Studio C++ Build Tools.
+
+
+- **Node.js**: Version `24.0.0` or higher
+- **npm**: Package manager (included with Node.js)
+- **LLM Provider**: An OpenAI-compatible API server (e.g., [llama.cpp](https://github.com/ggml-org/llama.cpp))
+- **Discord Bot Credentials**: A registered Bot Token and Client ID from the [Discord Developer Portal](https://discord.com/developers/applications) *(Required for `DISCORD_BOT_ENABLED=true`)*
+- (Optional) **API Keys**:
+  - [Tavily API Key](https://tavily.com/) for internet web search tool
+  - [Giphy API Key](https://developers.giphy.com/) for GIF search tool
+  - [Firebase](https://firebase.google.com/) project credentials for web authentication *(Required for `WEB_API_ENABLED=true`)*
+
+## Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/df-001/nocturne-engine.git
+   cd nocturne-engine
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Configure environment variables**:
+
+   Copy `.env.example` to `.env` and fill in your configuration to spec.
+
+4. **Register Discord commands**:
+   ```bash
+   npm run register:commands
+   ```
+
+5. **Start the engine**:
+   ```bash
+   npm run start
+   ```
+
+## Scripts
+
+| Script | Command | Description |
+| --- | --- | --- |
+| `start` | `node src/index.js` | Starts Nocturne Engine (Bot & Web API) |
+| `register:commands` | `node src/scripts/register-commands.js` | Registers slash commands with Discord API |
+| `lint` | `eslint src/` | Runs ESLint code quality checks |
+
+---
+
+## License
+
+This project is licensed under the **ISC License**. Refer to `package.json` for details.
