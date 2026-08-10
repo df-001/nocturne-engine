@@ -1,5 +1,7 @@
 import { GIPHY_API_KEYS } from "../../config.js";
 
+let index = 0;
+
 export const sendGif = {
     definition: {
         type: "function",
@@ -28,21 +30,36 @@ export const sendGif = {
         }
 
         let gifUrl = null;
-        for (const apiKey of GIPHY_API_KEYS) {
+        let attempts = 0;
+        const maxAttempts = GIPHY_API_KEYS.length;
+
+        // try each key in round-robin order until a request succeeds or max attempts are reached
+        while (attempts < maxAttempts) {
+            const apiKey = GIPHY_API_KEYS[index];
+
+            index = (index + 1) % GIPHY_API_KEYS.length;
+
             try {
                 const url = `https://api.giphy.com/v1/gifs/search?api_key=${apiKey}&q=${encodeURIComponent(prompt)}&limit=10`;
                 const res = await fetch(url);
-                if (!res.ok) continue;
-
+                if (!res.ok) {
+                    attempts++;
+                    continue;
+                }
                 const data = await res.json();
                 const gifs = data.data || [];
-                if (gifs.length === 0) continue;
+                if (gifs.length === 0) {
+                    attempts++;
+                    continue;
+                }
                 // Pick a random GIF from results
                 const randomIndex = Math.floor(Math.random() * gifs.length);
                 gifUrl = gifs[randomIndex].images.original.url;
+
                 break;
             } catch (err) {
                 console.warn("Giphy fetch error:", err.message);
+                attempts++;
                 continue;
             }
         }

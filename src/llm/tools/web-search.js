@@ -1,5 +1,7 @@
 import { TAVILY_API_KEYS } from "../../config.js";
 
+let index = 0;
+
 export const webSearch = {
     definition: {
         type: "function",
@@ -31,8 +33,15 @@ export const webSearch = {
             return "Search failed: API unavailable.";
         }
 
-        // try each key in order until a request succeeds
-        for (const apiKey of TAVILY_API_KEYS) {
+        let attempts = 0;
+        const maxAttempts = TAVILY_API_KEYS.length;
+
+        // try each key in round-robin order until a request succeeds or max attempts are reached
+        while (attempts < maxAttempts) {
+            const apiKey = TAVILY_API_KEYS[index];
+
+            index = (index + 1) % TAVILY_API_KEYS.length;
+
             try {
                 const res = await fetch("https://api.tavily.com/search", {
                     method: "POST",
@@ -47,7 +56,10 @@ export const webSearch = {
                 });
 
                 // skip to next key on 429 or quota errors
-                if (!res.ok) continue;
+                if (!res.ok) {
+                    attempts++;
+                    continue;
+                }
 
                 const data = await res.json();
                 const output = [];
@@ -64,7 +76,7 @@ export const webSearch = {
                     const title = (item.title || "Untitled").trim();
                     const url = item.url || "#";
                     let snippet = item.content || "No snippet available";
-                    if (item.content.length > 300) {
+                    if (item.content && item.content.length > 300) {
                         snippet = item.content.slice(0, 300) + "...";
                     }
 
@@ -74,7 +86,8 @@ export const webSearch = {
                 return output.join("\n\n") || "No search results found.";
             } catch (e) {
                 // try next API key on fetch network errors
-                console.warn(e);
+                console.warn("Tavily fetch error:", e.message);
+                attempts++;
                 continue;
             }
         }
@@ -82,5 +95,3 @@ export const webSearch = {
         return "Search failed: API limits reached.";
     }
 };
-
-
