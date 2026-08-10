@@ -4,7 +4,7 @@
 
 # Nocturne Engine
 
-## Progress [~66%]
+## Progress [~81%]
 
 ## Implemented
 
@@ -24,6 +24,11 @@
 - [x] Get time tool
 - [x] Message user tool with user list
 - [x] Context injection for message_user
+- [x] Internet search
+- [x] Send GIF/image tool
+- [x] Run code in a sandbox (isolated-vm [JS])
+- [x] Set reminder (DM)
+- [x] Generate image (Other local server)
 
 ### API
 - [x] API Set up with /health
@@ -38,3 +43,10 @@
 - [x] Title summaries
 - [x] Rate limiting
 - [x] Image support
+- [x] Image storage with database
+
+### Web
+- [x] Public Website
+- [x] API integration
+- [x] Markdown Support
+- [x] KaTeX support

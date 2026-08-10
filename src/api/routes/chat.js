@@ -60,6 +60,8 @@ router.post("/chat", async (req, res) => {
             }
         }
 
+        console.log(`<Web REQ> ${prompt}`);
+
         const textStream = processTextStream({
             prompt,
             images: base64Images,
@@ -74,7 +76,7 @@ router.post("/chat", async (req, res) => {
             }
         });
 
-        appendChatMessage(conversationId, "user", prompt);
+        appendChatMessage(conversationId, "user", prompt, images);
 
         // Summarize conversation on the first message (Streams at same time as response)
         if (cleanHistory.length === 0) {
@@ -90,7 +92,22 @@ router.post("/chat", async (req, res) => {
             res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
         }
 
-        appendChatMessage(conversationId, "assistant", response);
+        // Get markdown image URLs (e.g. ![alt](url)) to save output images (image-gen)
+        const outputImages = [];
+        const matches = response.matchAll(/!\[.*?\]\((.*?)\)/g);
+        for (const match of matches) {
+            if (match[1]) {
+                outputImages.push(match[1]);
+            }
+        }
+
+        console.log(`<Web RES> ${response}`);
+
+        if (outputImages.length > 0) {
+            appendChatMessage(conversationId, "assistant", response, outputImages, "output");
+        } else {
+            appendChatMessage(conversationId, "assistant", response);
+        }
 
         res.write("data: [DONE]\n\n");
         res.end();

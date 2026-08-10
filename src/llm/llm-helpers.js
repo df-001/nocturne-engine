@@ -52,11 +52,9 @@ export async function buildPrompt(message) {
         return message.content || ""; // Returns text only string rather than json if no images present or on non vlm
     }
 
-    const parts = [];
-
-    if (message.content) {
-        parts.push({ type: "text", text: message.content });
-    }
+    const parts = [
+        { type: "text", text: message.content || "" }
+    ];
 
     for (const attachment of imageAttachments) {
         parts.push({
@@ -75,7 +73,9 @@ export function clearImages(prompt) {
     */
     if (typeof prompt === "string") return prompt; // Ignores text only strings
     for (const part of prompt) {
-        if (part.type === "text") return part.text;
+        if (part.type === "text") {
+            return `${part.text} [sent image]`;
+        }
     }
     return "[sent image]"; // Placeholder tag to tell llm that image was present
 }
@@ -88,7 +88,7 @@ export async function respondStream({ clientContext }) {
 
     let returnMessage = null;
 
-    console.log(`<Message from ${author.username}>`);
+    console.log(`<Message from ${author.username}> ${message}`);
 
     let text = "";
     let lastEditTime = Date.now(); // Date object for timed streams
@@ -152,7 +152,7 @@ export async function respondNoStream({ clientContext, slashInteraction = false 
 
     if (!slashInteraction) await channel.sendTyping();
 
-    console.log(`<Message from ${author.username}>`);
+    console.log(`<Message from ${author.username}> ${message}`);
     const history = await contextStore.get(type, channel.id);
 
     let prompt;

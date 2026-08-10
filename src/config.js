@@ -91,7 +91,7 @@ export const ENABLE_TOOLS = boolean("ENABLE_TOOLS");
 export const MAX_TOOL_TURNS = number("MAX_TOOL_TURNS");
 
 // External Servers
-
+export const IMG_URL = process.env.IMG_URL;
 
 // Web Config
 export const FIREBASE_PROJECT_ID = WEB_API_ENABLED ? string("FIREBASE_PROJECT_ID") : null;
@@ -101,5 +101,31 @@ export const CORS_ORIGINS = (process.env.CORS_ORIGINS || process.env.FRONTEND_UR
     .split(",")
     .map((url) => url.trim())
     .filter(Boolean); // Removes any empty values from array
+
+// Tavily Config
+const parsedTavilyKeys = [];
+const rawTavilyKeys = process.env.TAVILY_API_KEYS || "";
+const splitTavilyKeys = rawTavilyKeys.split("\n");
+for (const key of splitTavilyKeys) {
+    const trimmedKey = key.trim();
+    if (trimmedKey) {
+        parsedTavilyKeys.push(trimmedKey);
+    }
+}
+export const TAVILY_API_KEYS = parsedTavilyKeys;
+
+// Giphy Config
+const parsedGiphyKeys = [];
+const rawGiphyKeys = process.env.GIPHY_API_KEYS || "";
+const splitGiphyKeys = rawGiphyKeys.split("\n");
+for (const key of splitGiphyKeys) {
+    const trimmedKey = key.trim();
+    if (trimmedKey) {
+        parsedGiphyKeys.push(trimmedKey);
+    }
+}
+export const GIPHY_API_KEYS = parsedGiphyKeys;
+
+
 
 

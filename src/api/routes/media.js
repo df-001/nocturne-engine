@@ -9,7 +9,7 @@ const UPLOADS_DIR = join(__dirname, "..", "..", "..", "data", "web", "uploads");
 const router = express.Router();
 
 // Serve data
-router.get("/media/:filename", async (req, res) => {
+router.get(["/media/:filename", "/uploads/:filename"], async (req, res) => {
     const filename = basename(req.params.filename);
     const filePath = join(UPLOADS_DIR, filename);
 
@@ -17,7 +17,9 @@ router.get("/media/:filename", async (req, res) => {
         const fileBuffer = await fs.readFile(filePath);
 
         // Attempt to cache image with cloudflare for 1 year
-        res.setHeader("Content-Type", "image/jpeg");
+        const ext = filename.split(".").pop().toLowerCase();
+        const mimeType = ext === "png" ? "image/png" : "image/jpeg";
+        res.setHeader("Content-Type", mimeType);
         res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
         return res.send(fileBuffer);
     } catch {
