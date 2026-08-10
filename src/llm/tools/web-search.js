@@ -24,7 +24,7 @@ export const webSearch = {
 
     status: (args) => `Searching the web for "${args.query}"...`,
 
-    async execute(args) {
+    async execute(args, _context) {
         const { query } = args;
 
         if (!query) return "Search failed: No query provided.";
