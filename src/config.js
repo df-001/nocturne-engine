@@ -69,7 +69,7 @@ export const HISTORY_LIMIT = number("HISTORY_LIMIT");
 // Prompt Setup
 
 export const DM_SYSTEM_PROMPT = loadSystemPrompt(string("DM_PROMPT"));
-export const VOICE_SYSTEM_PROMPT = loadSystemPrompt(string("VOICE_PROMPT"));
+export const GUILD_SYSTEM_PROMPT = loadSystemPrompt(string("GUILD_PROMPT"));
 export const WEB_SYSTEM_PROMPT = loadSystemPrompt(string("WEB_PROMPT"));
 
 // Discord Config

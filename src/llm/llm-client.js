@@ -162,8 +162,8 @@ export async function* processTextStream({ prompt, images = [], temp = TEMPERATU
                         const delta = choice.delta;
                         if (!delta) continue;
 
-                        // Accumulate text content and stream it to the caller
-                        if (delta.content) {
+                        // Accumulate existing text content and stream it to the caller
+                        if (delta?.content?.length) {
                             assistantContent += delta.content;
                             yield delta.content;
                         }

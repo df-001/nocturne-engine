@@ -1,4 +1,4 @@
-import { LLM_VISION, STREAMING_INTERVAL, MESSAGE_CHAR_LIMIT, VOICE_SYSTEM_PROMPT, DM_SYSTEM_PROMPT } from "../config.js";
+import { LLM_VISION, STREAMING_INTERVAL, MESSAGE_CHAR_LIMIT, GUILD_SYSTEM_PROMPT, DM_SYSTEM_PROMPT } from "../config.js";
 import { contextStore } from "../llm/context.js";
 import { splitText } from "../llm/text-splitter.js";
 import { processText, processTextStream } from "../llm/llm-client.js";
@@ -105,7 +105,7 @@ export async function respondStream({ clientContext }) {
 
     let sys_prompt;
     if (type === "guild") {
-        sys_prompt = VOICE_SYSTEM_PROMPT;
+        sys_prompt = GUILD_SYSTEM_PROMPT;
     } else {
         sys_prompt = DM_SYSTEM_PROMPT;
     }
@@ -124,6 +124,10 @@ export async function respondStream({ clientContext }) {
             await returnMessage.edit(text.slice(0, MESSAGE_CHAR_LIMIT) + "... |");
             lastEditTime = Date.now(); // Reset the timer
         }
+    }
+
+    if (text.trim() === "") {
+        text = "fallback";
     }
 
     if (text.length > MESSAGE_CHAR_LIMIT) {
@@ -171,7 +175,7 @@ export async function respondNoStream({ clientContext, slashInteraction = false 
 
     let sys_prompt;
     if (type === "guild") {
-        sys_prompt = VOICE_SYSTEM_PROMPT;
+        sys_prompt = GUILD_SYSTEM_PROMPT;
     } else {
         sys_prompt = DM_SYSTEM_PROMPT;
     }
