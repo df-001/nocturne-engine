@@ -21,6 +21,19 @@ const commands = [
                 required: true,
             }
         ]
+    },
+    {
+        name: "model",
+        description: "Set the model preset for this channel.",
+        options: [
+            {
+                name: "model",
+                description: "Model name",
+                type: 3, // string
+                required: true,
+                autocomplete: true,
+            }
+        ]
     }
 ];
 

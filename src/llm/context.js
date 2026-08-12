@@ -16,6 +16,10 @@ class ContextStore {
         this.#defaultLimit = limit;
     }
 
+    #cacheKey(type, channelId) {
+        return `${type}:${channelId}`;
+    }
+
     #filePath(type, channelId) {
         // Returns .json path for conversation e.g. data/discord/<type>/<channelId>.json
         const dir = join(DATA_ROOT, type);
@@ -26,7 +30,8 @@ class ContextStore {
 
     async #load(type, channelId) {
         // if the key isnt in the cache yet, try reading and JSON-parsing the file. If it doesnt exist (catch the error), start with []. stores the result in this.#cache.
-        if (this.#cache.has(channelId)) {
+        const key = this.#cacheKey(type, channelId);
+        if (this.#cache.has(key)) {
             return;
         }
 
@@ -38,15 +43,18 @@ class ContextStore {
             const parsed = JSON.parse(rawData);
 
             // Reads JSON into cache map
-            this.#cache.set(channelId, parsed.messages || []);
+            this.#cache.set(key, {
+                messages: parsed.messages || [],
+                preset: parsed.preset !== undefined ? parsed.preset : null
+            });
         } catch (error) {
             if (error.code === "ENOENT") {
                 // File not exists
-                this.#cache.set(channelId, []);
+                this.#cache.set(key, { messages: [], preset: null });
             } else {
                 // Corruption
                 console.warn(`Failed to read/parse history for channel ${channelId}:`, error.message);
-                this.#cache.set(channelId, []);
+                this.#cache.set(key, { messages: [], preset: null });
             }
         }
     }
@@ -54,13 +62,14 @@ class ContextStore {
     async #save(type, channelId) {
         // Get new messages from cache, convert messages to JSON then write to disk
         const { dir, file } = this.#filePath(type, channelId);
+        const key = this.#cacheKey(type, channelId);
 
-        const messages = this.#cache.get(channelId) || [];
+        const data = this.#cache.get(key) || { messages: [], preset: null };
 
         try {
             await mkdir(dir, { recursive: true });
 
-            const content = JSON.stringify({ messages }, null, 4);
+            const content = JSON.stringify({ messages: data.messages, preset: data.preset }, null, 4);
 
             await writeFile(file, content, "utf8");
         } catch (error) {
@@ -72,22 +81,44 @@ class ContextStore {
     async get(type, channelId) {
         // call #load, then return a copy of the array
         await this.#load(type, channelId);
+        const key = this.#cacheKey(type, channelId);
 
-        const messages = this.#cache.get(channelId) || [];
+        const data = this.#cache.get(key) || { messages: [], preset: null };
 
-        return [...messages];
+        return [...data.messages];
+    }
+
+    async getPreset(type, channelId) {
+        await this.#load(type, channelId);
+        const key = this.#cacheKey(type, channelId);
+
+        const data = this.#cache.get(key) || { messages: [], preset: null };
+
+        return data.preset;
+    }
+
+    async setPreset(type, channelId, presetId) {
+        await this.#load(type, channelId);
+        const key = this.#cacheKey(type, channelId);
+
+        const data = this.#cache.get(key) || { messages: [], preset: null };
+        data.preset = presetId;
+        this.#cache.set(key, data);
+
+        await this.#save(type, channelId);
     }
 
     async push(type, channelId, role, content) {
         // Load in current data, add message and trim to max length
         await this.#load(type, channelId);
+        const key = this.#cacheKey(type, channelId);
 
-        const messages = this.#cache.get(channelId);
+        const data = this.#cache.get(key) || { messages: [], preset: null };
 
-        messages.push({ role, content });
+        data.messages.push({ role, content });
 
-        while (messages.length > this.#defaultLimit) {
-            messages.shift();
+        while (data.messages.length > this.#defaultLimit) {
+            data.messages.shift();
         }
 
         await this.#save(type, channelId);
@@ -96,7 +127,8 @@ class ContextStore {
 
     async clear(type, channelId) {
         // Clears cache and file
-        this.#cache.delete(channelId);
+        const key = this.#cacheKey(type, channelId);
+        this.#cache.delete(key);
 
         const { file } = this.#filePath(type, channelId);
         try {
