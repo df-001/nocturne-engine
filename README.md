@@ -1,7 +1,7 @@
 > [!IMPORTANT]
 > Nocturne Engine is rewrite of a past project in early stages. It is currently in active development and may contain breaking changes or bugs. Everything is subject to change.
 
-# 🌙 Nocturne Engine
+# <img src="https://nocturne.darkfast.uk/favicon.ico" width="24" height="24" alt="Nocturne logo"> Nocturne Engine
 
 A modular, Discord bot and web engine built on Node.js.
 
@@ -11,10 +11,20 @@ A modular, Discord bot and web engine built on Node.js.
 
 ## Features
 
-- **Discord Bot Framework**: Supports direct messaging, guild chat integration, designated bot channels, custom bot status, and streaming text responses using Discord.js.
+- **Discord Bot Framework**: Supports direct messaging, guild chat integration, designated bot channels, custom bot status, streaming text responses using Discord.js, and per-channel model preset selection (`/model`).
 - **LLM & Vision Support**: Uses OpenAI compatible endpoints with image multimodality.
+- **Model Presets & Selection**: Dynamic presets for custom system prompts (with platform-specific prompts for web, guild, and DMs), temperature, max tokens, target model, and tool toggles per request or channel.
 - **Modular Tooling System**: Easy to create and use tool integrations. 
-- **REST & SSE Web API**: Express 5 server featuring Server-Sent Events (SSE) chat streaming, rate limiting, security headers (Helmet), and title summarization.
+- **REST & SSE Web API**: Express 5 server featuring Server-Sent Events (SSE) chat streaming, model preset querying (`GET /api/presets`), rate limiting, security headers (Helmet), and title summarization.
+
+## Discord Slash Commands
+
+| Command | Description |
+| --- | --- |
+| `/chat <message>` | Send a prompt to the bot in a guild channel |
+| `/model <model>` | Switch model preset for the current channel (with autocomplete) |
+| `/reset` | Clear conversation history for the current channel |
+| `/ping` | Check bot status |
 
 ## Included Tools
   - **Code Sandbox**: Secure JavaScript code execution powered by `isolated-vm`.

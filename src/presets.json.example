@@ -1,12 +1,12 @@
 [
     {
         "id": 0,
-        "name": "Default Assistant",
-        "description": "Standard balanced assistant settings with platform-specific prompts",
+        "name": "Default Preset",
+        "description": "Standard balanced settings with platform-specific prompts",
         "systemPrompt": {
-            "web": "nocturne-web",
-            "guild": "nocturne-guild",
-            "dm": "nocturne-dm"
+            "web": "prompt-web",
+            "guild": "prompt-guild",
+            "dm": "prompt-dm"
         },
         "temperature": 0.7,
         "model": null,
@@ -16,9 +16,9 @@
     },
     {
         "id": 1,
-        "name": "Creative Writer",
-        "description": "High temperature prompt for creative storytelling using a single prompt file",
-        "systemPrompt": "nocturne-web",
+        "name": "Preset 2",
+        "description": "Second preset example.",
+        "systemPrompt": "prompt-2",
         "temperature": 0.95,
         "model": null,
         "maxTokens": 4096,
