@@ -140,6 +140,8 @@ export async function respondStream({ clientContext }) {
         text = "fallback";
     }
 
+    if (!returnMessage) returnMessage = await channel.send(text);
+
     if (text.length > MESSAGE_CHAR_LIMIT) {
         const chunks = splitText(text);
         await returnMessage.edit(chunks[0]);

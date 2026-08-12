@@ -37,7 +37,7 @@ export function splitText(text, limit = MESSAGE_CHAR_LIMIT) {
         while (remaining.length > 0) {
             let overhead = 0;
             if (inCode) {
-                overhead = 4; // Reserve space for "\n```"
+                overhead = 5; // Reserve space for "\n```"
             }
             
             const available = limit - currentChunk.length - overhead;

@@ -128,16 +128,12 @@ class ContextStore {
     async clear(type, channelId) {
         // Clears cache and file
         const key = this.#cacheKey(type, channelId);
-        this.#cache.delete(key);
+        const data = this.#cache.get(key) || { messages: [], preset: null };
 
-        const { file } = this.#filePath(type, channelId);
-        try {
-            await unlink(file);
-        } catch (error) {
-            if (error.code !== "ENOENT") {
-                console.warn(`Failed to delete history file for channel ${channelId}:`, error.message);
-            }
-        }
+        data.messages = [];
+        this.#cache.set(key, data);
+
+        await this.#save(type, channelId);
     }
 }
 
