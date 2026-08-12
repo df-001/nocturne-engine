@@ -46,9 +46,6 @@ export function getPresetById(id = 0, platform = "web") {
         // if systemPrompt is a dictionary with platform keys
         if (typeof fileName === "object" && fileName !== null) {
             fileName = fileName[platform] || fileName.web || fileName.guild || fileName.dm;
-        } else if (typeof fileName === "string") {
-            // single string prompt filename ignores platform context
-            fileName = fileName;
         }
 
         // read system prompt file content from disk
