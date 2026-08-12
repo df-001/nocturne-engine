@@ -1,7 +1,8 @@
-import { LLM_VISION, STREAMING_INTERVAL, MESSAGE_CHAR_LIMIT, GUILD_SYSTEM_PROMPT, DM_SYSTEM_PROMPT } from "../config.js";
+import { LLM_VISION, STREAMING_INTERVAL, MESSAGE_CHAR_LIMIT, GUILD_SYSTEM_PROMPT, DM_SYSTEM_PROMPT, TEMPERATURE, LLM_MODEL, ENABLE_TOOLS } from "../config.js";
 import { contextStore } from "../llm/context.js";
 import { splitText } from "../llm/text-splitter.js";
 import { processText, processTextStream } from "../llm/llm-client.js";
+import { getPresetById } from "../api/routes/presets.js";
 import sharp from "sharp";
 
 export async function processImageToBuffer(input) {
@@ -103,14 +104,23 @@ export async function respondStream({ clientContext }) {
         prompt[0].text = prefix + prompt[0].text;
     }
 
-    let sys_prompt;
-    if (type === "guild") {
-        sys_prompt = GUILD_SYSTEM_PROMPT;
-    } else {
-        sys_prompt = DM_SYSTEM_PROMPT;
-    }
+    const presetId = (await contextStore.getPreset(type, channel.id)) ?? 0;
+    const preset = getPresetById(presetId, type);
 
-    const stream = processTextStream({ prompt: prompt, sys_prompt: sys_prompt, history, context: clientContext });
+    const sys_prompt = preset ? (preset.systemPrompt || "") : (type === "guild" ? GUILD_SYSTEM_PROMPT : DM_SYSTEM_PROMPT);
+    const temp = preset ? (preset.temperature ?? TEMPERATURE) : TEMPERATURE;
+    const model = preset ? (preset.model || LLM_MODEL) : LLM_MODEL;
+    const tools_enabled = preset ? (preset.toolsEnabled ?? ENABLE_TOOLS) : ENABLE_TOOLS;
+
+    const stream = processTextStream({
+        prompt: prompt,
+        sys_prompt: sys_prompt,
+        temp: temp,
+        model: model,
+        tools_enabled: tools_enabled,
+        history: history,
+        context: clientContext
+    });
 
     for await (const chunk of stream) {
         text += chunk;
@@ -129,6 +139,8 @@ export async function respondStream({ clientContext }) {
     if (text.trim() === "") {
         text = "fallback";
     }
+
+    if (!returnMessage) returnMessage = await channel.send(text);
 
     if (text.length > MESSAGE_CHAR_LIMIT) {
         const chunks = splitText(text);
@@ -173,14 +185,23 @@ export async function respondNoStream({ clientContext, slashInteraction = false 
         }
     }
 
-    let sys_prompt;
-    if (type === "guild") {
-        sys_prompt = GUILD_SYSTEM_PROMPT;
-    } else {
-        sys_prompt = DM_SYSTEM_PROMPT;
-    }
+    const presetId = (await contextStore.getPreset(type, channel.id)) ?? 0;
+    const preset = getPresetById(presetId, type);
 
-    const response = await processText({ prompt: prompt, sys_prompt: sys_prompt, history, context: clientContext });
+    const sys_prompt = preset ? (preset.systemPrompt || "") : (type === "guild" ? GUILD_SYSTEM_PROMPT : DM_SYSTEM_PROMPT);
+    const temp = preset ? (preset.temperature ?? TEMPERATURE) : TEMPERATURE;
+    const model = preset ? (preset.model || LLM_MODEL) : LLM_MODEL;
+    const tools_enabled = preset ? (preset.toolsEnabled ?? ENABLE_TOOLS) : ENABLE_TOOLS;
+
+    const response = await processText({
+        prompt: prompt,
+        sys_prompt: sys_prompt,
+        temp: temp,
+        model: model,
+        tools_enabled: tools_enabled,
+        history: history,
+        context: clientContext
+    });
 
     // Push to context
     const extractedPrompt = clearImages(prompt);

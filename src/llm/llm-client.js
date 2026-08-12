@@ -1,4 +1,4 @@
-import { MAX_TOKENS, TEMPERATURE, LLM_URL, LLM_MODEL, MAX_TOOL_TURNS } from "../config.js";
+import { MAX_TOKENS, TEMPERATURE, LLM_URL, LLM_MODEL, MAX_TOOL_TURNS, ENABLE_TOOLS } from "../config.js";
 import { getToolDefinitions, getToolStatus, useTool } from "./tools/installed-tools.js";
 
 async function executeToolCalls(toolCalls, messages, context) {
@@ -47,7 +47,7 @@ function formatUserContent(prompt, images) {
     return content;
 }
 
-export async function processText({ prompt, images = [], temp = TEMPERATURE, sys_prompt = "", history = [], context = {} }) {
+export async function processText({ prompt, images = [], temp = TEMPERATURE, model = LLM_MODEL, tools_enabled = ENABLE_TOOLS, sys_prompt = "", history = [], context = {} }) {
     try {
         const assembledPrompt = formatUserContent(prompt, images);
         const messages = [
@@ -57,16 +57,20 @@ export async function processText({ prompt, images = [], temp = TEMPERATURE, sys
         ];
 
         for (let i = 0; i < MAX_TOOL_TURNS; i++) {
+            const body = {
+                model: model,
+                messages: messages,
+                temperature: temp,
+                max_tokens: MAX_TOKENS
+            };
+            if (tools_enabled) {
+                body.tools = getToolDefinitions();
+            }
+
             const res = await fetch(LLM_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    model: LLM_MODEL,
-                    messages: messages,
-                    tools: getToolDefinitions(),
-                    temperature: temp,
-                    max_tokens: MAX_TOKENS
-                })
+                body: JSON.stringify(body)
             });
 
             if (!res.ok) {
@@ -92,7 +96,7 @@ export async function processText({ prompt, images = [], temp = TEMPERATURE, sys
     }
 }
 
-export async function* processTextStream({ prompt, images = [], temp = TEMPERATURE, sys_prompt = "", history = [], context = {} }) {
+export async function* processTextStream({ prompt, images = [], temp = TEMPERATURE, model = LLM_MODEL, tools_enabled = ENABLE_TOOLS, sys_prompt = "", history = [], context = {} }) {
     try {
         const assembledPrompt = formatUserContent(prompt, images);
         const messages = [
@@ -102,17 +106,21 @@ export async function* processTextStream({ prompt, images = [], temp = TEMPERATU
         ];
 
         for (let i = 0; i < MAX_TOOL_TURNS; i++) {
+            const body = {
+                model: model,
+                messages: messages,
+                temperature: temp,
+                max_tokens: MAX_TOKENS,
+                stream: true
+            };
+            if (tools_enabled) {
+                body.tools = getToolDefinitions();
+            }
+
             const res = await fetch(LLM_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    model: LLM_MODEL,
-                    messages: messages,
-                    tools: getToolDefinitions(),
-                    temperature: temp,
-                    max_tokens: MAX_TOKENS,
-                    stream: true
-                })
+                body: JSON.stringify(body)
             });
 
             if (!res.ok) {

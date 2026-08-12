@@ -1,7 +1,8 @@
 import express from "express";
-import { WEB_SYSTEM_PROMPT, TEMPERATURE } from "../../config.js";
+import { TEMPERATURE, LLM_MODEL, ENABLE_TOOLS } from "../../config.js";
 import { processTextStream } from "../../llm/llm-client.js";
 import { getConversation, appendChatMessage, summarizeConversation } from "../db-helpers.js";
+import { getPresetById } from "./presets.js";
 import { promises as fs } from "node:fs";
 import { join, dirname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,7 +14,7 @@ const router = express.Router();
 
 router.post("/chat", async (req, res) => {
     const uid = req.user.uid;
-    const { prompt, conversationId, images } = req.body;
+    const { prompt, conversationId, images, presetId } = req.body;
 
     if (!prompt || !conversationId) {
         return res.status(400).json({
@@ -62,19 +63,23 @@ router.post("/chat", async (req, res) => {
 
         console.log(`<Web REQ> ${prompt}`);
 
+        const preset = getPresetById(presetId ?? 0, "web");
+
         const textStream = processTextStream({
             prompt,
             images: base64Images,
-            temp: TEMPERATURE,
-            sys_prompt: WEB_SYSTEM_PROMPT,
+            temp: preset.temperature ?? TEMPERATURE,
+            sys_prompt: preset.systemPrompt || "",
+            model: preset.model || LLM_MODEL,
+            tools_enabled: preset.toolsEnabled ?? ENABLE_TOOLS,
             history: cleanHistory,
             context: {
-                // Tool context for notifying web user of tool calls
                 onToolStatus: (statusText) => {
                     res.write(`data: ${JSON.stringify({ toolStatus: statusText })}\n\n`);
                 }
             }
         });
+        
 
         appendChatMessage(conversationId, "user", prompt, images);
 

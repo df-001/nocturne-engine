@@ -1,0 +1,28 @@
+[
+    {
+        "id": 0,
+        "name": "Default Preset",
+        "description": "Standard balanced settings with platform-specific prompts",
+        "systemPrompt": {
+            "web": "prompt-web",
+            "guild": "prompt-guild",
+            "dm": "prompt-dm"
+        },
+        "temperature": 0.7,
+        "model": null,
+        "maxTokens": 2048,
+        "toolsEnabled": true,
+        "topP": 1.0
+    },
+    {
+        "id": 1,
+        "name": "Preset 2",
+        "description": "Second preset example.",
+        "systemPrompt": "prompt-2",
+        "temperature": 0.95,
+        "model": null,
+        "maxTokens": 4096,
+        "toolsEnabled": true,
+        "topP": 0.9
+    }
+]

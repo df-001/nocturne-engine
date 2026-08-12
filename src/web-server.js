@@ -9,6 +9,7 @@ import conversationRoute from "./api/routes/conversations.js";
 import chatRoute from "./api/routes/chat.js";
 import mediaRoute from "./api/routes/media.js";
 import uploadRoute from "./api/routes/upload.js";
+import presetsRoute from "./api/routes/presets.js";
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use(rateLimiter);
 app.use(uploadRoute);
 app.use(conversationRoute);
 app.use(chatRoute);
+app.use(presetsRoute);
 
 // Stub app.use(memoryRoute);
 
