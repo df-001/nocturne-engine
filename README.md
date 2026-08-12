@@ -3,7 +3,7 @@
 
 # <img src="https://nocturne.darkfast.uk/favicon.ico" width="24" height="24" alt="Nocturne logo"> Nocturne Engine
 
-A modular, Discord bot and web engine built on Node.js.
+A Node.js framework for multi-platform LLM bots with and custom tool integration.
 
 ---
 
