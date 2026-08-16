@@ -1,4 +1,4 @@
-import { LLM_VISION, STREAMING_INTERVAL, MESSAGE_CHAR_LIMIT, GUILD_SYSTEM_PROMPT, DM_SYSTEM_PROMPT, TEMPERATURE, LLM_MODEL, ENABLE_TOOLS } from "../config.js";
+import { LLM_VISION, STREAMING_INTERVAL, MESSAGE_CHAR_LIMIT, TEMPERATURE, LLM_MODEL, ENABLE_TOOLS } from "../config.js";
 import { contextStore } from "../llm/context.js";
 import { splitText } from "../llm/text-splitter.js";
 import { processText, processTextStream } from "../llm/llm-client.js";
@@ -107,7 +107,7 @@ export async function respondStream({ clientContext }) {
     const presetId = (await contextStore.getPreset(type, channel.id)) ?? 0;
     const preset = getPresetById(presetId, type);
 
-    const sys_prompt = preset ? (preset.systemPrompt || "") : (type === "guild" ? GUILD_SYSTEM_PROMPT : DM_SYSTEM_PROMPT);
+    const sys_prompt = preset?.systemPrompt || "";
     const temp = preset ? (preset.temperature ?? TEMPERATURE) : TEMPERATURE;
     const model = preset ? (preset.model || LLM_MODEL) : LLM_MODEL;
     const tools_enabled = preset ? (preset.toolsEnabled ?? ENABLE_TOOLS) : ENABLE_TOOLS;
@@ -188,7 +188,7 @@ export async function respondNoStream({ clientContext, slashInteraction = false 
     const presetId = (await contextStore.getPreset(type, channel.id)) ?? 0;
     const preset = getPresetById(presetId, type);
 
-    const sys_prompt = preset ? (preset.systemPrompt || "") : (type === "guild" ? GUILD_SYSTEM_PROMPT : DM_SYSTEM_PROMPT);
+    const sys_prompt = preset?.systemPrompt || "";
     const temp = preset ? (preset.temperature ?? TEMPERATURE) : TEMPERATURE;
     const model = preset ? (preset.model || LLM_MODEL) : LLM_MODEL;
     const tools_enabled = preset ? (preset.toolsEnabled ?? ENABLE_TOOLS) : ENABLE_TOOLS;

@@ -4,7 +4,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { processText } from "../llm/llm-client.js";
-import { SQLITE_DB_NAME } from "../config.js";
+import { SQLITE_DB_NAME, TITLE_MODEL, TITLE_PROMPT } from "../config.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_ROOT = join(__dirname, "..", "..", "data", "web");
@@ -187,7 +187,10 @@ export async function summarizeConversation(uid, conversationId) {
 
     try {
         const rawTitle = await processText({
-            prompt: `Summarize this user request into a short 1-5 word title. Respond with ONLY the title, no quotation marks, no punctuation, and no extra text:\n\n"${firstMsg.content}"`,
+            prompt: TITLE_PROMPT + firstMsg.content,
+            model: TITLE_MODEL,
+            temp: 0.2,
+            tools_enabled: false,
             history: []
         });
 

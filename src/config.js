@@ -1,16 +1,4 @@
 import "dotenv/config";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-
-function loadSystemPrompt(name) {
-    try {
-        console.log(`Reading ${name}`);
-        return readFileSync(join("prompts", name), "utf8");
-    } catch (err) {
-        console.warn(`Failed to load system prompt "${name}":`, err.message);
-        return null;
-    }
-}
 
 function float(key) {
     const value = process.env[key];
@@ -66,11 +54,6 @@ export const VOICE = string("VOICE");
 export const BREATH_ENABLED = boolean("BREATH_ENABLED");
 export const HISTORY_LIMIT = number("HISTORY_LIMIT");
 
-// Prompt Setup
-
-export const DM_SYSTEM_PROMPT = loadSystemPrompt(string("DM_PROMPT"));
-export const GUILD_SYSTEM_PROMPT = loadSystemPrompt(string("GUILD_PROMPT"));
-export const WEB_SYSTEM_PROMPT = loadSystemPrompt(string("WEB_PROMPT"));
 
 // Discord Config
 
@@ -86,6 +69,8 @@ export const MESSAGE_CHAR_LIMIT = DISCORD_BOT_ENABLED ? number("MESSAGE_CHAR_LIM
 
 export const LLM_URL = string("LLM_URL");
 export const LLM_MODEL = string("LLM_MODEL");
+export const TITLE_MODEL = string("TITLE_MODEL");
+export const TITLE_PROMPT = process.env.TITLE_PROMPT || "";
 export const LLM_VISION = boolean("LLM_VISION");
 export const ENABLE_TOOLS = boolean("ENABLE_TOOLS");
 export const MAX_TOOL_TURNS = number("MAX_TOOL_TURNS");
