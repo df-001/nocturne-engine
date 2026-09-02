@@ -1,4 +1,4 @@
-import { LLM_VISION, STREAMING_INTERVAL, MESSAGE_CHAR_LIMIT, TEMPERATURE, LLM_MODEL, ENABLE_TOOLS } from "../config.js";
+import { LLM_VISION, STREAMING_INTERVAL, MESSAGE_CHAR_LIMIT, TEMPERATURE, MAX_TOKENS, LLM_MODEL, ENABLE_TOOLS } from "../config.js";
 import { contextStore } from "../llm/context.js";
 import { splitText } from "../llm/text-splitter.js";
 import { processText, processTextStream } from "../llm/llm-client.js";
@@ -89,19 +89,25 @@ export async function respondStream({ clientContext }) {
 
     let returnMessage = null;
 
-    console.log(`<Message from ${author.username}> ${message}`);
+    await channel.sendTyping();
+
+    console.log(`<Message from ${author.username}> ${message.content}`);
 
     let text = "";
     let lastEditTime = Date.now(); // Date object for timed streams
     const history = await contextStore.get(type, channel.id);
 
     let prompt = await buildPrompt(message);
-    const prefix = `*${author.username}:* `;
+    const prefix = `<speaker name="${author.username}">`;
     // Adds prefix to users text
     if (typeof prompt === "string") {
-        prompt = prefix + prompt;
+        if (!prompt.startsWith("<speaker name=")) {
+            prompt = `${prefix}${prompt}</speaker>`;
+        }
     } else {
-        prompt[0].text = prefix + prompt[0].text;
+        if (!prompt[0].text.startsWith("<speaker name=")) {
+            prompt[0].text = `${prefix}${prompt[0].text}</speaker>`;
+        }
     }
 
     const presetId = (await contextStore.getPreset(type, channel.id)) ?? 0;
@@ -111,6 +117,8 @@ export async function respondStream({ clientContext }) {
     const temp = preset ? (preset.temperature ?? TEMPERATURE) : TEMPERATURE;
     const model = preset ? (preset.model || LLM_MODEL) : LLM_MODEL;
     const tools_enabled = preset ? (preset.toolsEnabled ?? ENABLE_TOOLS) : ENABLE_TOOLS;
+    const max_tokens = preset ? (preset.maxTokens ?? MAX_TOKENS) : MAX_TOKENS;
+    const top_p = preset?.topP;
 
     const stream = processTextStream({
         prompt: prompt,
@@ -118,11 +126,21 @@ export async function respondStream({ clientContext }) {
         temp: temp,
         model: model,
         tools_enabled: tools_enabled,
+        max_tokens: max_tokens,
+        top_p: top_p,
         history: history,
-        context: clientContext
+        context: clientContext,
+        signal: clientContext.signal
     });
 
     for await (const chunk of stream) {
+        if (clientContext.isCancelled?.() || clientContext.signal?.aborted) {
+            if (returnMessage) {
+                await returnMessage.delete().catch(() => {});
+            }
+            return;
+        }
+
         text += chunk;
 
         if (!returnMessage) {
@@ -134,6 +152,13 @@ export async function respondStream({ clientContext }) {
             await returnMessage.edit(text.slice(0, MESSAGE_CHAR_LIMIT) + "... |");
             lastEditTime = Date.now(); // Reset the timer
         }
+    }
+
+    if (clientContext.isCancelled?.() || clientContext.signal?.aborted) {
+        if (returnMessage) {
+            await returnMessage.delete().catch(() => {});
+        }
+        return;
     }
 
     if (text.trim() === "") {
@@ -168,7 +193,9 @@ export async function respondNoStream({ clientContext, slashInteraction = false 
 
     if (!slashInteraction) await channel.sendTyping();
 
-    console.log(`<Message from ${author.username}> ${message}`);
+    if (clientContext.isCancelled?.() || clientContext.signal?.aborted) return;
+
+    console.log(`<Message from ${author.username}> ${message.content}`);
     const history = await contextStore.get(type, channel.id);
 
     let prompt;
@@ -176,12 +203,16 @@ export async function respondNoStream({ clientContext, slashInteraction = false 
         prompt = message;
     } else {
         prompt = await buildPrompt(message);
-        const prefix = `*${author.username}:* `;
+        const prefix = `<speaker name="${author.username}">`;
         // Adds prefix to users text
         if (typeof prompt === "string") {
-            prompt = prefix + prompt;
+            if (!prompt.startsWith("<speaker name=")) {
+                prompt = `${prefix}${prompt}</speaker>`;
+            }
         } else {
-            prompt[0].text = prefix + prompt[0].text;
+            if (!prompt[0].text.startsWith("<speaker name=")) {
+                prompt[0].text = `${prefix}${prompt[0].text}</speaker>`;
+            }
         }
     }
 
@@ -192,6 +223,8 @@ export async function respondNoStream({ clientContext, slashInteraction = false 
     const temp = preset ? (preset.temperature ?? TEMPERATURE) : TEMPERATURE;
     const model = preset ? (preset.model || LLM_MODEL) : LLM_MODEL;
     const tools_enabled = preset ? (preset.toolsEnabled ?? ENABLE_TOOLS) : ENABLE_TOOLS;
+    const max_tokens = preset ? (preset.maxTokens ?? MAX_TOKENS) : MAX_TOKENS;
+    const top_p = preset?.topP;
 
     const response = await processText({
         prompt: prompt,
@@ -199,9 +232,14 @@ export async function respondNoStream({ clientContext, slashInteraction = false 
         temp: temp,
         model: model,
         tools_enabled: tools_enabled,
+        max_tokens: max_tokens,
+        top_p: top_p,
         history: history,
-        context: clientContext
+        context: clientContext,
+        signal: clientContext.signal
     });
+
+    if (clientContext.isCancelled?.() || clientContext.signal?.aborted) return;
 
     // Push to context
     const extractedPrompt = clearImages(prompt);

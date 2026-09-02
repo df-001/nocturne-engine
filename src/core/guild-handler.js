@@ -1,50 +1,37 @@
 import { Events } from "discord.js";
-import { respondStream, respondNoStream } from "../llm/llm-helpers.js";
-import { STREAMING_INTERVAL, BOT_CHANNEL_NAME } from "../config.js";
+import { handleDiscordMessage } from "./discord-request-handler.js";
+import { BOT_CHANNEL_NAME } from "../config.js";
 
+async function isBotReference(message, client) {
+    if (message.reference && message.reference.messageId) {
+        try {
+            const referencedMessage = await message.channel.messages.fetch(message.reference.messageId);
+            if (referencedMessage.author.id === client.user.id) {
+                return true;
+            }
+        } catch (e) {
+            console.warn(e);
+        }
+        return false;
+    }
+}
 
 export default (client) => {
-    if (STREAMING_INTERVAL > 0) {
-        // Streaming enabled
-        client.on(Events.MessageCreate, async (message) => {
-            if (message.author.bot) return; // Ignore self
-            if (!message.guild) return; // Ignore server messages
-            if (!message.channel.name.includes(BOT_CHANNEL_NAME)) return; // Ignores auto-respond for unrelated channels
+    client.on(Events.MessageCreate, async (message) => {
+        if (message.author.bot) return; // Ignore self
+        if (!message.guild) return; // Ignore dm messages
 
-            // clientContext for response
-            const clientContext = {
-                client: client,
-                message: message,
-                channel: message.channel,
-                author: message.author,
-                type: "guild",
-                onToolStatus: async (statusText) => {
-                    await message.channel.send(`*${statusText}*`);
-                }
-            };
+        if (!message.channel.name.includes(BOT_CHANNEL_NAME)) { // Ignores auto-respond for unrelated channels
+            if (!message.mentions.has(client.user.id) && !await isBotReference(message, client)) return; // Ignores non ping in unrelated channels
 
-            await respondStream({ clientContext });
-        });
-    } else {
-        // Streaming disabled
-        client.on(Events.MessageCreate, async (message) => {
-            if (message.author.bot) return; // Ignore self
-            if (!message.guild) return; // Ignore dm messages
-            if (!message.channel.name.includes(BOT_CHANNEL_NAME)) return; // Ignores auto-respond for unrelated channels
+            const fetched = await message.channel.messages.fetch({ limit: 8 }); // TODO: Add this var to .env
+            const recent = Array.from(fetched.values()).reverse(); // Converts to just messages array in chrono order
+            recent.pop(); // Deletes users most recent message so it only shows once
+            for (const msg of recent) {
+                await handleDiscordMessage(client, msg, "guild"); // Automatically processes with debounce into one
+            }
+        }
 
-            // clientContext for response
-            const clientContext = {
-                client: client,
-                message: message,
-                channel: message.channel,
-                author: message.author,
-                type: "guild",
-                onToolStatus: async (statusText) => {
-                    await message.channel.send(`*${statusText}*`);
-                }
-            };
-
-            await respondNoStream({ clientContext });
-        });
-    }
+        await handleDiscordMessage(client, message, "guild");
+    });
 };

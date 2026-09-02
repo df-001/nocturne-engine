@@ -64,6 +64,8 @@ export const ACTIVITY = process.env.ACTIVITY || "";
 export const BOT_CHANNEL_NAME = process.env.BOT_CHANNEL_NAME || "";
 export const STREAMING_INTERVAL = DISCORD_BOT_ENABLED ? number("STREAMING_INTERVAL") : null;
 export const MESSAGE_CHAR_LIMIT = DISCORD_BOT_ENABLED ? number("MESSAGE_CHAR_LIMIT") : null;
+export const DISCORD_DEBOUNCE_MS = DISCORD_BOT_ENABLED && process.env.DISCORD_DEBOUNCE_MS ? number("DISCORD_DEBOUNCE_MS") : 500;
+
 
 // LLM Config
 

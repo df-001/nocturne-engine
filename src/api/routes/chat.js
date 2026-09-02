@@ -1,5 +1,5 @@
 import express from "express";
-import { TEMPERATURE, LLM_MODEL, ENABLE_TOOLS } from "../../config.js";
+import { TEMPERATURE, MAX_TOKENS, LLM_MODEL, ENABLE_TOOLS } from "../../config.js";
 import { processTextStream } from "../../llm/llm-client.js";
 import { getConversation, appendChatMessage, summarizeConversation } from "../db-helpers.js";
 import { getPresetById } from "./presets.js";
@@ -22,6 +22,7 @@ router.post("/chat", async (req, res) => {
             error: "Missing prompt or conversationId."
         });
     }
+
 
     try {
         const history = getConversation(uid, conversationId);
@@ -46,6 +47,13 @@ router.post("/chat", async (req, res) => {
         res.setHeader("X-Accel-Buffering", "no");
 
         res.flushHeaders();
+
+        const abortController = new AbortController();
+
+        // Abort LLM request if client closes connection early
+        req.on("close", () => {
+            abortController.abort();
+        });
 
         const base64Images = [];
         if (images && images.length > 0) {
@@ -72,14 +80,18 @@ router.post("/chat", async (req, res) => {
             sys_prompt: preset.systemPrompt || "",
             model: preset.model || LLM_MODEL,
             tools_enabled: preset.toolsEnabled ?? ENABLE_TOOLS,
+            max_tokens: preset.maxTokens ?? MAX_TOKENS,
+            top_p: preset.topP,
             history: cleanHistory,
+            signal: abortController.signal,
             context: {
+                signal: abortController.signal,
                 onToolStatus: (statusText) => {
                     res.write(`data: ${JSON.stringify({ toolStatus: statusText })}\n\n`);
                 }
             }
         });
-        
+
 
         appendChatMessage(conversationId, "user", prompt, images);
 

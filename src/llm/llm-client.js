@@ -3,6 +3,10 @@ import { getToolDefinitions, getToolStatus, useTool } from "./tools/installed-to
 
 async function executeToolCalls(toolCalls, messages, context) {
     for (const tc of toolCalls) {
+        if (context?.signal?.aborted || context?.isCancelled?.()) {
+            return;
+        }
+
         const args = JSON.parse(tc.function.arguments);
         const statusText = getToolStatus(tc.function.name, args);
         console.log(`<Tool> ${statusText}`);
@@ -47,7 +51,12 @@ function formatUserContent(prompt, images) {
     return content;
 }
 
-export async function processText({ prompt, images = [], temp = TEMPERATURE, model = LLM_MODEL, tools_enabled = ENABLE_TOOLS, sys_prompt = "", history = [], context = {} }) {
+export async function processText({ prompt, images = [], temp = TEMPERATURE, model = LLM_MODEL, tools_enabled = ENABLE_TOOLS, max_tokens = MAX_TOKENS, top_p, sys_prompt = "", history = [], context = {}, signal }) {
+    const activeSignal = signal || context?.signal;
+    if (activeSignal?.aborted || context?.isCancelled?.()) {
+        return "";
+    }
+
     try {
         const assembledPrompt = formatUserContent(prompt, images);
         const messages = [
@@ -57,12 +66,19 @@ export async function processText({ prompt, images = [], temp = TEMPERATURE, mod
         ];
 
         for (let i = 0; i < MAX_TOOL_TURNS; i++) {
+            if (activeSignal?.aborted || context?.isCancelled?.()) {
+                return "";
+            }
+
             const body = {
                 model: model,
                 messages: messages,
                 temperature: temp,
-                max_tokens: MAX_TOKENS
+                max_tokens: max_tokens
             };
+            if (top_p !== undefined && top_p !== null) {
+                body.top_p = top_p;
+            }
             if (tools_enabled) {
                 body.tools = getToolDefinitions();
             }
@@ -70,7 +86,8 @@ export async function processText({ prompt, images = [], temp = TEMPERATURE, mod
             const res = await fetch(LLM_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body)
+                body: JSON.stringify(body),
+                signal: activeSignal
             });
 
             if (!res.ok) {
@@ -91,12 +108,20 @@ export async function processText({ prompt, images = [], temp = TEMPERATURE, mod
 
         return "Maximum tool uses exceeded.";
     } catch (err) {
+        if (err.name === "AbortError" || activeSignal?.aborted || context?.isCancelled?.()) {
+            return "";
+        }
         console.warn(err);
         return "An error occurred during thinking.";
     }
 }
 
-export async function* processTextStream({ prompt, images = [], temp = TEMPERATURE, model = LLM_MODEL, tools_enabled = ENABLE_TOOLS, sys_prompt = "", history = [], context = {} }) {
+export async function* processTextStream({ prompt, images = [], temp = TEMPERATURE, model = LLM_MODEL, tools_enabled = ENABLE_TOOLS, max_tokens = MAX_TOKENS, top_p, sys_prompt = "", history = [], context = {}, signal }) {
+    const activeSignal = signal || context?.signal;
+    if (activeSignal?.aborted || context?.isCancelled?.()) {
+        return;
+    }
+
     try {
         const assembledPrompt = formatUserContent(prompt, images);
         const messages = [
@@ -106,13 +131,20 @@ export async function* processTextStream({ prompt, images = [], temp = TEMPERATU
         ];
 
         for (let i = 0; i < MAX_TOOL_TURNS; i++) {
+            if (activeSignal?.aborted || context?.isCancelled?.()) {
+                return;
+            }
+
             const body = {
                 model: model,
                 messages: messages,
                 temperature: temp,
-                max_tokens: MAX_TOKENS,
+                max_tokens: max_tokens,
                 stream: true
             };
+            if (top_p !== undefined && top_p !== null) {
+                body.top_p = top_p;
+            }
             if (tools_enabled) {
                 body.tools = getToolDefinitions();
             }
@@ -120,7 +152,8 @@ export async function* processTextStream({ prompt, images = [], temp = TEMPERATU
             const res = await fetch(LLM_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body)
+                body: JSON.stringify(body),
+                signal: activeSignal
             });
 
             if (!res.ok) {
@@ -138,63 +171,77 @@ export async function* processTextStream({ prompt, images = [], temp = TEMPERATU
 
             const toolCallMap = {};
 
-            while (true) {
-                const { value, done } = await reader.read(); // Receives packet
-
-                // If full delta not present, buffer and reconstruct before processing
-                const chunk = value || "";
-                buffer += chunk;
-
-                const lines = buffer.split("\n");
-                if (!done) {
-                    buffer = lines.pop();
-                } else {
-                    buffer = "";
-                }
-
-                // Expected delta format -> data: {"choices":[{"delta":{"content":"hi"}}
-                for (const line of lines) {
-                    const cleaned = line.replace(/^data: /, "").trim();
-                    if (!cleaned || cleaned === "[DONE]") continue;
-
-                    try {
-                        const parsed = JSON.parse(cleaned);
-                        const choice = parsed.choices[0];
-                        if (!choice) continue;
-
-                        // Capture finish reason when it arrives
-                        if (choice.finish_reason) {
-                            finishReason = choice.finish_reason;
-                        }
-
-                        const delta = choice.delta;
-                        if (!delta) continue;
-
-                        // Accumulate existing text content and stream it to the caller
-                        if (delta?.content?.length) {
-                            assistantContent += delta.content;
-                            yield delta.content;
-                        }
-
-                        // Finds deltas and assembles strings based off them > 
-                        // id > name > arguments
-                        if (delta.tool_calls) {
-                            for (const tc of delta.tool_calls) {
-                                if (!toolCallMap[tc.index]) {
-                                    toolCallMap[tc.index] = { id: "", type: "function", function: { name: "", arguments: "" } };
-                                }
-                                const entry = toolCallMap[tc.index];
-                                if (tc.id) entry.id += tc.id;
-                                if (tc.function?.name) entry.function.name += tc.function.name;
-                                if (tc.function?.arguments) entry.function.arguments += tc.function.arguments;
-                            }
-                        }
-                    } catch {
-                        // Skip malformed packets
+            try {
+                while (true) {
+                    if (activeSignal?.aborted || context?.isCancelled?.()) {
+                        await reader.cancel().catch(() => {});
+                        return;
                     }
-                }
 
-                if (done) break;
+                    const { value, done } = await reader.read(); // Receives packet
+
+                    if (activeSignal?.aborted || context?.isCancelled?.()) {
+                        await reader.cancel().catch(() => {});
+                        return;
+                    }
+
+                    // If full delta not present, buffer and reconstruct before processing
+                    const chunk = value || "";
+                    buffer += chunk;
+
+                    const lines = buffer.split("\n");
+                    if (!done) {
+                        buffer = lines.pop();
+                    } else {
+                        buffer = "";
+                    }
+
+                    // Expected delta format -> data: {"choices":[{"delta":{"content":"hi"}}
+                    for (const line of lines) {
+                        const cleaned = line.replace(/^data: /, "").trim();
+                        if (!cleaned || cleaned === "[DONE]") continue;
+
+                        try {
+                            const parsed = JSON.parse(cleaned);
+                            const choice = parsed.choices[0];
+                            if (!choice) continue;
+
+                            // Capture finish reason when it arrives
+                            if (choice.finish_reason) {
+                                finishReason = choice.finish_reason;
+                            }
+
+                            const delta = choice.delta;
+                            if (!delta) continue;
+
+                            // Accumulate existing text content and stream it to the caller
+                            if (delta?.content?.length) {
+                                assistantContent += delta.content;
+                                yield delta.content;
+                            }
+
+                            // Finds deltas and assembles strings based off them > 
+                            // id > name > arguments
+                            if (delta.tool_calls) {
+                                for (const tc of delta.tool_calls) {
+                                    if (!toolCallMap[tc.index]) {
+                                        toolCallMap[tc.index] = { id: "", type: "function", function: { name: "", arguments: "" } };
+                                    }
+                                    const entry = toolCallMap[tc.index];
+                                    if (tc.id) entry.id += tc.id;
+                                    if (tc.function?.name) entry.function.name += tc.function.name;
+                                    if (tc.function?.arguments) entry.function.arguments += tc.function.arguments;
+                                }
+                            }
+                        } catch {
+                            // Skip malformed packets
+                        }
+                    }
+
+                    if (done) break;
+                }
+            } finally {
+                reader.releaseLock();
             }
 
             // Build the assistant message from this turn
@@ -213,6 +260,9 @@ export async function* processTextStream({ prompt, images = [], temp = TEMPERATU
         yield "Maximum tool uses exceeded.";
 
     } catch (err) {
+        if (err.name === "AbortError" || activeSignal?.aborted || context?.isCancelled?.()) {
+            return;
+        }
         console.warn(err);
         yield "An error occurred during thinking.";
     }
