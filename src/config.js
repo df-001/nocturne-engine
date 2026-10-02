@@ -86,7 +86,7 @@ export const API_PORT = WEB_API_ENABLED ? number("API_PORT") : null;
 export const SQLITE_DB_NAME = process.env.SQLITE_DB_NAME || "web.db";
 export const CORS_ORIGINS = (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || "")
     .split(",")
-    .map((url) => url.trim())
+    .map((url) => url.trim().replace(/\/+$/, ""))
     .filter(Boolean); // Removes any empty values from array
 
 // Tavily Config

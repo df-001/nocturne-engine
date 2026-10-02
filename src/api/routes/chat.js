@@ -14,7 +14,7 @@ const router = express.Router();
 
 router.post("/chat", async (req, res) => {
     const uid = req.user.uid;
-    const { prompt, conversationId, images, presetId } = req.body;
+    const { prompt, conversationId, images = [], presetId = 0 } = req.body || {};
 
     if (!prompt || !conversationId) {
         return res.status(400).json({

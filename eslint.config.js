@@ -17,6 +17,8 @@ export default [
                 Buffer: "readonly",
                 TextDecoderStream: "readonly",
                 global: "readonly",
+                AbortController: "readonly",
+                AbortSignal: "readonly",
             },
         },
         // Custom project styling ruleset

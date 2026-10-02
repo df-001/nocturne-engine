@@ -12,7 +12,7 @@ const router = express.Router();
 export function loadPresets() {
     try {
         const raw = readFileSync(PRESETS_PATH, "utf8");
-        return JSON.parse(raw);
+        return JSON.parse(raw).filter((preset) => preset.enabled !== false);
     } catch (e) {
         console.warn(`Error loading presets: ${e}`);
         return [];
@@ -29,10 +29,7 @@ export function getPresetById(id = 0, platform = "web") {
     }
 
     // fallback to 0 if index not available in presets.json
-    let preset = presets[index];
-    if (!preset) {
-        preset = presets[0];
-    }
+    let preset = presets.find((p) => p.id === index) || presets[0]; // reset indices on disabled models
 
     if (!preset) {
         return null;

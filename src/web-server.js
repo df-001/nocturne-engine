@@ -13,9 +13,19 @@ import presetsRoute from "./api/routes/presets.js";
 
 const app = express();
 
-app.use(express.json({ limit: "16mb" }));
-app.use(cors({ origin: CORS_ORIGINS.length > 0 ? CORS_ORIGINS : "*" }));
+const allowedOrigins = [
+    ...CORS_ORIGINS,
+    /^https:\/\/[a-zA-Z0-9-]+\.nocturne-ai\.pages\.dev$/
+];
+
+app.use(cors({
+    origin: allowedOrigins.length > 0 ? allowedOrigins : "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Public routes
 app.get("/health", (req, res) => {
