@@ -25,7 +25,7 @@ export const sendGif = {
         const { prompt } = args;
 
         if (!GIPHY_API_KEYS?.length) {
-            console.warn("WARNING: API Keys not set, search unavailable.");
+            console.warn("<WARN> API Keys not set, search unavailable.");
             return "Search failed: API unavailable.";
         }
 
@@ -58,7 +58,7 @@ export const sendGif = {
 
                 break;
             } catch (err) {
-                console.warn("Giphy fetch error:", err.message);
+                console.warn("<WARN> Giphy fetch error:", err.message);
                 attempts++;
                 continue;
             }

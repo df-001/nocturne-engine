@@ -64,7 +64,7 @@ router.post("/chat", async (req, res) => {
                     const fileBuffer = await fs.readFile(filePath);
                     base64Images.push(`data:image/jpeg;base64,${fileBuffer.toString("base64")}`);
                 } catch (err) {
-                    console.warn(`Failed to read image ${imgUrl} for LLM:`, err);
+                    console.warn(`<WARN> Failed to read image ${imgUrl} for LLM:`, err);
                 }
             }
         }
@@ -82,6 +82,8 @@ router.post("/chat", async (req, res) => {
             tools_enabled: preset.toolsEnabled ?? ENABLE_TOOLS,
             max_tokens: preset.maxTokens ?? MAX_TOKENS,
             top_p: preset.topP,
+            reasoning_budget: preset.reasoning_budget,
+            reasoning_effort: preset.reasoning_effort,
             history: cleanHistory,
             signal: abortController.signal,
             context: {
@@ -98,7 +100,7 @@ router.post("/chat", async (req, res) => {
         // Summarize conversation on the first message (Streams at same time as response)
         if (cleanHistory.length === 0) {
             summarizeConversation(uid, conversationId).catch((e) => {
-                console.warn(`Error generating conversation title: ${e}`);
+                console.warn(`<WARN> Error generating conversation title: ${e}`);
             });
         }
 
@@ -129,7 +131,7 @@ router.post("/chat", async (req, res) => {
         res.write("data: [DONE]\n\n");
         res.end();
     } catch (e) {
-        console.warn(`Streaming failure on /chat for user ${uid}: ${e}`);
+        console.warn(`<WARN> Streaming failure on /chat for user ${uid}: ${e}`);
 
         // Failure before stream
         if (!res.headersSent) {

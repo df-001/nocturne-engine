@@ -1,6 +1,6 @@
 import { rateLimit, ipKeyGenerator } from "express-rate-limit";
 
-console.log("Initializing rate limiter...");
+console.log("<INFO> Initializing rate limiter...");
 
 /*
  * Express middleware to rate limit by uid/ip

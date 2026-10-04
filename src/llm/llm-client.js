@@ -51,7 +51,7 @@ function formatUserContent(prompt, images) {
     return content;
 }
 
-export async function processText({ prompt, images = [], temp = TEMPERATURE, model = LLM_MODEL, tools_enabled = ENABLE_TOOLS, max_tokens = MAX_TOKENS, top_p, sys_prompt = "", history = [], context = {}, signal }) {
+export async function processText({ prompt, images = [], temp = TEMPERATURE, model = LLM_MODEL, tools_enabled = ENABLE_TOOLS, max_tokens = MAX_TOKENS, top_p, reasoning_budget, reasoning_effort, sys_prompt = "", history = [], context = {}, signal }) {
     const activeSignal = signal || context?.signal;
     if (activeSignal?.aborted || context?.isCancelled?.()) {
         return "";
@@ -79,9 +79,17 @@ export async function processText({ prompt, images = [], temp = TEMPERATURE, mod
             if (top_p !== undefined && top_p !== null) {
                 body.top_p = top_p;
             }
+            if (reasoning_budget !== undefined && reasoning_budget !== null) {
+                body.reasoning_budget_tokens = reasoning_budget;
+            }
+            if (reasoning_effort !== undefined && reasoning_effort !== null) {
+                body.reasoning_effort = reasoning_effort;
+            }
             if (tools_enabled) {
                 body.tools = getToolDefinitions();
             }
+
+            console.log(`<DEBUG> [LLM] Max reasoning budget: ${reasoning_budget !== undefined && reasoning_budget !== null ? reasoning_budget : "none"}`);
 
             const res = await fetch(LLM_URL, {
                 method: "POST",
@@ -116,7 +124,7 @@ export async function processText({ prompt, images = [], temp = TEMPERATURE, mod
     }
 }
 
-export async function* processTextStream({ prompt, images = [], temp = TEMPERATURE, model = LLM_MODEL, tools_enabled = ENABLE_TOOLS, max_tokens = MAX_TOKENS, top_p, sys_prompt = "", history = [], context = {}, signal }) {
+export async function* processTextStream({ prompt, images = [], temp = TEMPERATURE, model = LLM_MODEL, tools_enabled = ENABLE_TOOLS, max_tokens = MAX_TOKENS, top_p, reasoning_budget, reasoning_effort, sys_prompt = "", history = [], context = {}, signal }) {
     const activeSignal = signal || context?.signal;
     if (activeSignal?.aborted || context?.isCancelled?.()) {
         return;
@@ -145,9 +153,17 @@ export async function* processTextStream({ prompt, images = [], temp = TEMPERATU
             if (top_p !== undefined && top_p !== null) {
                 body.top_p = top_p;
             }
+            if (reasoning_budget !== undefined && reasoning_budget !== null) {
+                body.reasoning_budget_tokens = reasoning_budget;
+            }
+            if (reasoning_effort !== undefined && reasoning_effort !== null) {
+                body.reasoning_effort = reasoning_effort;
+            }
             if (tools_enabled) {
                 body.tools = getToolDefinitions();
             }
+
+            console.log(`<DEBUG> [LLM] Max reasoning budget: ${reasoning_budget !== undefined && reasoning_budget !== null ? reasoning_budget : "none"}`);
 
             const res = await fetch(LLM_URL, {
                 method: "POST",
@@ -174,14 +190,14 @@ export async function* processTextStream({ prompt, images = [], temp = TEMPERATU
             try {
                 while (true) {
                     if (activeSignal?.aborted || context?.isCancelled?.()) {
-                        await reader.cancel().catch(() => {});
+                        await reader.cancel().catch(() => { });
                         return;
                     }
 
                     const { value, done } = await reader.read(); // Receives packet
 
                     if (activeSignal?.aborted || context?.isCancelled?.()) {
-                        await reader.cancel().catch(() => {});
+                        await reader.cancel().catch(() => { });
                         return;
                     }
 

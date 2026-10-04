@@ -16,7 +16,7 @@ router.get("/conversations", (req, res) => {
             conversations: data
         });
     } catch (e) {
-        console.warn(`Error retrieving index for ${uid}: ${e}`);
+        console.warn(`<WARN> Error retrieving index for ${uid}: ${e}`);
 
         return res.status(500).json({
             success: false,
@@ -44,7 +44,7 @@ router.get("/conversations/:id", (req, res) => {
             conversation: data
         });
     } catch (e) {
-        console.warn(`Error retrieving conversation for ${uid}: ${e}`);
+        console.warn(`<WARN> Error retrieving conversation for ${uid}: ${e}`);
 
         return res.status(500).json({
             success: false,
@@ -68,7 +68,7 @@ router.post("/conversations", (req, res) => {
         });
 
     } catch (e) {
-        console.warn(`Error creating conversation for ${uid}: ${e}`);
+        console.warn(`<WARN> Error creating conversation for ${uid}: ${e}`);
 
         return res.status(500).json({
             success: false,
@@ -96,7 +96,7 @@ router.delete("/conversations/:id", (req, res) => {
             });
         }
     } catch (e) {
-        console.warn(`Database failure during deletion: ${e}`);
+        console.warn(`<WARN> Database failure during deletion: ${e}`);
         return res.status(500).json({
             success: false,
             error: "Internal Server Error: Failed to complete deletion request."

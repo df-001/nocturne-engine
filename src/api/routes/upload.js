@@ -43,7 +43,7 @@ router.post("/upload", upload.single("image"), async (req, res) => {
             url: `/media/${filename}`
         });
     } catch (err) {
-        console.error("Failed to process upload:", err);
+        console.error("<ERROR> Failed to process upload:", err);
         return res.status(500).json({
             success: false,
             error: "Failed to process image upload."

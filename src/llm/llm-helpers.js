@@ -128,6 +128,8 @@ export async function respondStream({ clientContext }) {
         tools_enabled: tools_enabled,
         max_tokens: max_tokens,
         top_p: top_p,
+        reasoning_budget: preset?.reasoning_budget,
+        reasoning_effort: preset?.reasoning_effort,
         history: history,
         context: clientContext,
         signal: clientContext.signal
@@ -136,7 +138,7 @@ export async function respondStream({ clientContext }) {
     for await (const chunk of stream) {
         if (clientContext.isCancelled?.() || clientContext.signal?.aborted) {
             if (returnMessage) {
-                await returnMessage.delete().catch(() => {});
+                await returnMessage.delete().catch(() => { });
             }
             return;
         }
@@ -156,7 +158,7 @@ export async function respondStream({ clientContext }) {
 
     if (clientContext.isCancelled?.() || clientContext.signal?.aborted) {
         if (returnMessage) {
-            await returnMessage.delete().catch(() => {});
+            await returnMessage.delete().catch(() => { });
         }
         return;
     }
@@ -234,6 +236,8 @@ export async function respondNoStream({ clientContext, slashInteraction = false 
         tools_enabled: tools_enabled,
         max_tokens: max_tokens,
         top_p: top_p,
+        reasoning_budget: preset?.reasoning_budget,
+        reasoning_effort: preset?.reasoning_effort,
         history: history,
         context: clientContext,
         signal: clientContext.signal

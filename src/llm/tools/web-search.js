@@ -29,7 +29,7 @@ export const webSearch = {
 
         if (!query) return "Search failed: No query provided.";
         if (!TAVILY_API_KEYS?.length) {
-            console.warn("WARNING: API Keys not set, search unavailable.");
+            console.warn("<WARN> API Keys not set, search unavailable.");
             return "Search failed: API unavailable.";
         }
 
@@ -82,16 +82,16 @@ export const webSearch = {
 
                     output.push(`${j + 1}. [${title}](${url})\n  ${snippet}`);
                 }
-                console.log(`Output for "${query}":`, output.join("\n\n"));
+                console.log(`<DEBUG> Output for "${query}":`, output.join("\n\n"));
                 return output.join("\n\n") || "No search results found.";
             } catch (e) {
                 // try next API key on fetch network errors
-                console.warn("Tavily fetch error:", e.message);
+                console.warn("<WARN> Tavily fetch error:", e.message);
                 attempts++;
                 continue;
             }
         }
-        console.log("Search failed: API limits reached.");
+        console.log("<WARN> Search failed: API limits reached.");
         return "Search failed: API limits reached.";
     }
 };

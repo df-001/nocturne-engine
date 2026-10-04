@@ -46,5 +46,5 @@ app.use(presetsRoute);
 
 // API listener
 app.listen(API_PORT, () => {
-    console.log(`API running on port ${API_PORT}`);
+    console.log(`<API> API running on port ${API_PORT}`);
 });

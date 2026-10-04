@@ -20,7 +20,7 @@ async function runSandbox(code, timeoutSec = 2, memoryLimitMB = 16) {
         jail.setSync("console", new ivm.ExternalCopy({}).copyInto());
 
         // attach callback logger to said object
-        jail.getSync("console").setSync("log", logCallback); 
+        jail.getSync("console").setSync("log", logCallback);
 
         const script = isolate.compileScriptSync(code);
         await script.run(context, { timeout: timeoutSec * 1000, copy: true });
@@ -37,7 +37,7 @@ export const runCode = {
         type: "function",
         function: {
             name: "run_js_code",
-            description: "Runs a JavaScript container to run code, ONLY base dependencies are available. Returns stdout",
+            description: "Runs a JavaScript container to run code, ONLY base dependencies are available. Use for complex maths NOT writing websites. Returns stdout.",
             parameters: {
                 type: "object",
                 properties: {
@@ -56,11 +56,11 @@ export const runCode = {
 
         try {
             const result = await runSandbox(script);
-            console.log("    Input script:", script);
-            console.log("    Execution result:", result);
+            console.log("<DEBUG> Input script:", script);
+            console.log("<DEBUG> Execution result:", result);
             return result;
         } catch (e) {
-            console.warn(e.name, e.message);
+            console.warn("<WARN>", e.name, e.message);
             return `Script ran with error(s):\n${e.message}`;
         }
     }

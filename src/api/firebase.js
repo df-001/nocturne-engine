@@ -2,7 +2,7 @@ import admin from "firebase-admin";
 import { FIREBASE_PROJECT_ID } from "../config.js";
 
 admin.initializeApp({ projectId: FIREBASE_PROJECT_ID });
-console.log(`Firebase Admin initialized with project ID: ${FIREBASE_PROJECT_ID}`);
+console.log(`<INFO> Firebase Admin initialized with project ID: ${FIREBASE_PROJECT_ID}`);
 
 
 export const auth = admin.auth();
@@ -53,7 +53,7 @@ export async function authenticateUser(req, res, next) {
         req.user = decodedToken;
         next();
     } catch (e) {
-        console.warn(e);
+        console.warn("<WARN>", e);
         return res.status(401).json({
             error: "Unauthorized: Invalid or expired token"
         });

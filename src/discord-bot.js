@@ -6,14 +6,14 @@ import dmListener from "./core/dm-handler.js";
 import guildListener from "./core/guild-handler.js";
 
 function shutdown() {
-    console.log("Ending process...");
+    console.log("<INFO> Ending process...");
     client.destroy();
     process.exit(0);
 }
 
 process.on("unhandledRejection", (e) => {
     // Global error handler to prevent unexpected crashes
-    console.error("Unhandled rejection:", e);
+    console.error("<ERROR> Unhandled rejection:", e);
 });
 
 const client = new Client({
@@ -36,7 +36,7 @@ dmListener(client);
 guildListener(client);
 
 client.on(Events.ClientReady, readyClient => {
-    console.log(`Active account: ${readyClient.user.tag}`);
+    console.log(`<DISCORD> Active account: ${readyClient.user.tag}`);
 
     client.user.setPresence({
         status: STATUS,

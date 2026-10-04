@@ -91,7 +91,7 @@ export const createReminder = {
                 const dmChannelId = sentMessage.channel.id;
                 await contextStore.push("dm", dmChannelId, "assistant", reminder);
             } catch (e) {
-                console.warn(`Failed to dispatch reminder to ${targetName} (${userId}):`, e.message);
+                console.warn(`<WARN> Failed to dispatch reminder to ${targetName} (${userId}):`, e.message);
             }
         }, delayMs);
 

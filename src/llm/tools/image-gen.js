@@ -63,7 +63,7 @@ export const imageGen = {
             // If on web client
             return `Image generated successfully. ![Generated Image](${mediaUrl})`;
         } catch (error) {
-            console.warn("Image generation tool error:", error);
+            console.warn("<WARN> Image generation tool error:", error);
             return `Failed to generate image: ${error.message}`;
         }
     }

@@ -205,6 +205,6 @@ export async function summarizeConversation(uid, conversationId) {
 
         stmt.run(title, conversationId, uid);
     } catch (err) {
-        console.warn(`Failed to summarize conversation ${conversationId}:`, err);
+        console.warn(`<WARN> Failed to summarize conversation ${conversationId}:`, err);
     }
 }

@@ -14,7 +14,7 @@ export function loadPresets() {
         const raw = readFileSync(PRESETS_PATH, "utf8");
         return JSON.parse(raw).filter((preset) => preset.enabled !== false);
     } catch (e) {
-        console.warn(`Error loading presets: ${e}`);
+        console.warn(`<WARN> Error loading presets: ${e}`);
         return [];
     }
 }
@@ -49,7 +49,7 @@ export function getPresetById(id = 0, platform = "web") {
         try {
             resolvedPreset.systemPrompt = readFileSync(join(PROMPTS_DIR, fileName), "utf8");
         } catch (e) {
-            console.warn(`Failed to read prompt file ${fileName}: ${e}`);
+            console.warn(`<WARN> Failed to read prompt file ${fileName}: ${e}`);
             resolvedPreset.systemPrompt = null;
         }
     }
